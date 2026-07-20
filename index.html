@@ -102,10 +102,13 @@ var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 var W=cv.width, H=cv.height, TS=32, VC=Math.floor(W/TS), VR=Math.floor(H/TS);
 var stage=document.getElementById("stage");
-function resize(){ var k=Math.max(0.5, Math.min(window.innerWidth/W, window.innerHeight/H));
+function vpSize(){ var vv=window.visualViewport;
+  return vv ? {w:vv.width, h:vv.height} : {w:window.innerWidth, h:window.innerHeight}; }
+function resize(){ var s=vpSize(), k=Math.max(0.5, Math.min(s.w/W, s.h/H));
   stage.style.transform="scale("+k+")"; }
 window.addEventListener("resize", resize);
-window.addEventListener("orientationchange", function(){ setTimeout(resize,120); });
+window.addEventListener("orientationchange", function(){ [60,180,320,520,800].forEach(function(t){ setTimeout(resize,t); }); });
+if(window.visualViewport){ window.visualViewport.addEventListener("resize", resize); }
 
 /* ===== Sound (WebAudio beeps) ===== */
 var AC=null, soundOn=true;
