@@ -1,0 +1,52 @@
+name: iOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "capacitor.config.json"
+      - "package.json"
+      - ".github/workflows/ios.yml"
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web assets
+        run: npm run build:web
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build unsigned app (simulator)
+        run: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: buddymon-ios-app
+          path: ios/App/build/Build/Products/Debug-iphonesimulator/App.app
+          if-no-files-found: warn
