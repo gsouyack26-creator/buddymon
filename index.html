@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Buddymon">
+<meta name="theme-color" content="#0c0e1a">
+<title>Buddymon: JJ Quest</title>
+<style>
+  :root{ --panel:#20233a; --ink:#f5f7ff; --accent:#ffcc33; --grn:#4caf50; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; background:#0c0e1a; color:var(--ink);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif; overflow:hidden; }
+  #wrap{ height:100%; display:flex; align-items:center; justify-content:center; }
+  #stage{ position:relative; }
+  canvas{ image-rendering:pixelated; background:#5aa84b; border:4px solid #11132a;
+    border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; }
+  .overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; }
+  .overlay.on{ display:flex; }
+  #title{ background:radial-gradient(circle at 50% 30%,#2b3f7a,#0c0e1a 75%); border-radius:8px; }
+  #title h1{ font-size:52px; letter-spacing:2px; color:var(--accent);
+    text-shadow:3px 3px 0 #11132a, 0 0 22px rgba(255,204,51,.5); }
+  #title h2{ font-size:20px; color:#cfe0ff; margin-top:2px; letter-spacing:6px; }
+  #title p{ margin-top:24px; color:#9fb0e0; font-size:14px; }
+  .menu{ margin-top:26px; display:flex; flex-direction:column; gap:12px; }
+  .btn{ background:var(--panel); border:2px solid #3a4270; color:var(--ink); font-size:18px;
+    padding:12px 34px; border-radius:10px; cursor:pointer; min-width:240px; transition:.12s; }
+  .btn:hover,.btn.sel{ background:var(--accent); color:#1a1c2e; border-color:var(--accent);
+    transform:translateY(-1px); }
+  #dialog{ position:absolute; left:12px; right:12px; bottom:12px; min-height:96px;
+    background:rgba(16,18,40,.96); border:3px solid var(--accent); border-radius:12px;
+    padding:16px 20px; font-size:19px; line-height:1.4; display:none; }
+  #dialog.on{ display:block; }
+  #dialog .who{ color:var(--accent); font-weight:bold; font-size:14px; letter-spacing:1px; }
+  #dialog .more{ position:absolute; right:16px; bottom:10px; color:var(--accent);
+    animation:bob .8s infinite; font-size:16px; }
+  @keyframes bob{ 50%{ transform:translateY(4px); } }
+  #choice{ position:absolute; right:16px; bottom:120px; background:rgba(16,18,40,.98);
+    border:3px solid var(--accent); border-radius:12px; padding:8px; display:none; min-width:150px; }
+  #choice.on{ display:block; }
+  #choice .opt{ padding:8px 14px; border-radius:8px; font-size:17px; }
+  #choice .opt.sel{ background:var(--accent); color:#1a1c2e; }
+  #toast{ position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    background:rgba(16,18,40,.95); border:2px solid var(--grn); color:#dfffe0;
+    padding:8px 16px; border-radius:20px; font-size:14px; opacity:0; transition:.3s; }
+  #toast.on{ opacity:1; }
+  #hint{ position:absolute; bottom:6px; right:10px; color:rgba(255,255,255,.45); font-size:11px; }
+  #touch{ position:absolute; inset:0; display:none; }
+  @media(hover:none){ #touch{ display:block; } }
+  .pad{ position:absolute; }
+  .pk{ position:absolute; width:52px; height:52px; background:rgba(255,255,255,.14);
+    border:2px solid rgba(255,255,255,.35); border-radius:10px; color:#fff; font-size:22px;
+    display:flex; align-items:center; justify-content:center; }
+  #dpad{ left:14px; bottom:14px; width:168px; height:168px; }
+  #btnA{ right:20px; bottom:70px; width:64px; height:64px; border-radius:50%;
+    background:rgba(255,204,51,.3); color:#ffcc33; font-weight:bold; }
+  #btnB{ right:96px; bottom:22px; width:56px; height:56px; border-radius:50%;
+    background:rgba(255,255,255,.16); }
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <canvas id="cv" width="480" height="352"></canvas>
+  <div id="title" class="overlay on">
+    <h1>BUDDYMON</h1><h2>JJ QUEST</h2>
+    <div class="menu" id="titleMenu">
+      <button class="btn sel" data-a="new">New Adventure</button>
+      <button class="btn" data-a="cont">Continue</button>
+    </div>
+    <p>Arrows / WASD to move &nbsp;&bull;&nbsp; Z or Space = action &nbsp;&bull;&nbsp; X = back / menu</p>
+  </div>
+  <div id="toast"></div>
+  <div id="choice"></div>
+  <div id="dialog"><span class="who"></span><div class="txt"></div><span class="more">&#9660;</span></div>
+  <div id="touch">
+    <div id="dpad" class="pad">
+      <div class="pk" data-d="up"   style="left:58px;top:0">&#9650;</div>
+      <div class="pk" data-d="left" style="left:0;top:58px">&#9664;</div>
+      <div class="pk" data-d="right"style="left:116px;top:58px">&#9654;</div>
+      <div class="pk" data-d="down" style="left:58px;top:116px">&#9660;</div>
+    </div>
+    <div id="btnA" class="pk" data-k="a">A</div>
+    <div id="btnB" class="pk" data-k="b">B</div>
+  </div>
+  <div id="hint">v0.1</div>
+</div></div>
+<script>
+"use strict";
+
+/* ===== Setup & responsive scaling (iPad-friendly) ===== */
+var cv = document.getElementById("cv");
+var ctx = cv.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+var W = cv.width, H = cv.height;
+var TS = 32;                 // tile size in px
+var VC = Math.floor(W / TS); // view columns = 15
+var VR = Math.floor(H / TS); // view rows    = 11
+var stage = document.getElementById("stage");
+function resize(){
+  var k = Math.min(window.innerWidth / W, window.innerHeight / H);
+  k = Math.max(0.5, k);
+  stage.style.transform = "scale(" + k + ")";
+}
+window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", function(){ setTimeout(resize, 120); });
+
+/* ===== Types & effectiveness ===== */
+var CHART = {
+  Fire:    { Grass:2, Bug:2, Water:0.5, Fire:0.5 },
+  Water:   { Fire:2, Grass:0.5, Water:0.5 },
+  Grass:   { Water:2, Fire:0.5, Bug:0.5, Grass:0.5 },
+  Electric:{ Water:2, Grass:0.5, Electric:0.5 },
+  Bug:     { Grass:2, Fire:0.5 },
+  Normal:  {}
+};
+function typeMult(atk, def){
+  var row = CHART[atk] || {};
+  return row[def] === undefined ? 1 : row[def];
+}
+
+/* ===== Moves ===== */
+var MOVES = {
+  tackle:  { name:"Tackle",     type:"Normal",   power:40 },
+  scratch: { name:"Scratch",    type:"Normal",   power:40 },
+  bite:    { name:"Bite",       type:"Normal",   power:55 },
+  vine:    { name:"Vine Whip",  type:"Grass",    power:48 },
+  leaf:    { name:"Leaf Storm", type:"Grass",    power:60 },
+  ember:   { name:"Ember",      type:"Fire",     power:48 },
+  flare:   { name:"Flare Burst",type:"Fire",     power:60 },
+  bubble:  { name:"Bubble",     type:"Water",    power:48 },
+  splash:  { name:"Splash Jet", type:"Water",    power:60 },
+  spark:   { name:"Spark",      type:"Electric", power:52 },
+  buzz:    { name:"Bug Bite",   type:"Bug",      power:50 }
+};
+
+/* ===== Species roster ===== */
+var SPECIES = {
+  sprucub:    { name:"Sprucub",    type:"Grass",    base:{hp:45,atk:11,def:11,spd:10}, moves:["tackle","vine"],    body:"#5db85d", accent:"#2e7d32", starter:true,  catchRate:40 },
+  emberkit:   { name:"Emberkit",   type:"Fire",     base:{hp:42,atk:13,def:9,spd:12},  moves:["scratch","ember"],  body:"#ff7043", accent:"#c53d13", starter:true,  catchRate:40 },
+  dribblet:   { name:"Dribblet",   type:"Water",    base:{hp:48,atk:10,def:12,spd:9},   moves:["tackle","bubble"],  body:"#42a5f5", accent:"#1565c0", starter:true,  catchRate:40 },
+  nibbit:     { name:"Nibbit",     type:"Normal",   base:{hp:38,atk:9,def:8,spd:13},    moves:["tackle","scratch"], body:"#c9a66b", accent:"#7a5c33", catchRate:120 },
+  buzzle:     { name:"Buzzle",     type:"Bug",      base:{hp:36,atk:10,def:9,spd:12},   moves:["buzz","tackle"],    body:"#cddc39", accent:"#827717", catchRate:120 },
+  sparkpup:   { name:"Sparkpup",   type:"Electric", base:{hp:40,atk:12,def:9,spd:14},   moves:["spark","bite"],     body:"#ffee58", accent:"#f9a825", catchRate:80 },
+  puddlet:    { name:"Puddlet",    type:"Water",    base:{hp:44,atk:9,def:11,spd:9},    moves:["bubble","tackle"],  body:"#4dd0e1", accent:"#00838f", catchRate:100 },
+  leafling:   { name:"Leafling",   type:"Grass",    base:{hp:42,atk:10,def:11,spd:10},  moves:["vine","tackle"],    body:"#81c784", accent:"#388e3c", catchRate:100 },
+  cindermouse:{ name:"Cindermouse",type:"Fire",     base:{hp:40,atk:12,def:9,spd:12},   moves:["ember","scratch"],  body:"#ef5350", accent:"#b71c1c", catchRate:90 },
+  gloomoth:   { name:"Gloomoth",   type:"Bug",      base:{hp:50,atk:13,def:12,spd:9},   moves:["buzz","bite"],      body:"#9575cd", accent:"#4527a0", rare:true, catchRate:45 }
+};
+
+/* wild pools by area difficulty */
+var WILD_COMMON = ["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup"];
+var WILD_DEEP   = ["sparkpup","cindermouse","puddlet","leafling","gloomoth","nibbit"];
+
+/* ===== World map (legend below) =====
+   . grass   , tall grass   # path   f flower   T tree   ~ water   o rock
+   H wall  R roof  D door  S sign  F fence  L labwall  E labdoor  b bed/heal */
+var MAP = [
+"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+"T....f......TT........,,,,,........TTT..T",
+"T..RRRR..RRRR..T....,,,,,,,,,,,....T....T",
+"T..RHHR..RHHR..T...,,,,,,,,,,,,,...T.oo.T",
+"T..RDHR..RHDR..T....,,,,,,,,,,,.....T...T",
+"T...#......#...T.....,,,,,,,,.......TTTTT",
+"T...#......#...ffff...,,,,,......T......T",
+"T...############S###########.....T..~~~.T",
+"T...#........f.......#......f....T.~~~~~.T",
+"T...#..RRRRRR........#....TTTT.....~~~~~.T",
+"T...#..RHHHHR...ff...#....TTTT......~~~~.T",
+"T.f.#..RHHHHR...,,...#.....TT.......~~~..T",
+"T...#..REHHDR...,,...#..............,,,..T",
+"T...#..LLLLLL...,,...#....ffff.....,,,,,.T",
+"T...#...........,,...#.............,,,,,.T",
+"T...#S..........,,...#....ooo......,,,,..T",
+"T...############S####S####..........,,..T",
+"T...#....,,,,,,......#....TTTTTT.......f.T",
+"T...#....,,,,,,......#....TTTTTT.....ff..T",
+"T.f.#....,,,,,,......#....TTTTTT.........T",
+"T...#....,,,,,,,,....#.......TT..oo......T",
+"T...#....,,,,,,,,....#...........o.......T",
+"T...#....,,,,,,......############S#######T",
+"T...#.f..,,,,,.................#.....f...T",
+"T...#..........fff............#..RRRR....T",
+"T...############################.RHHR...T",
+"T.........f...........ff.........RHDR....T",
+"T....oo.......TT.............f....#......T",
+"T.............TT.................#....f..T",
+"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+];
+var MW = MAP[0].length, MH = MAP.length;
+function tileAt(x,y){ if(x<0||y<0||x>=MW||y>=MH) return "T"; return MAP[y].charAt(x); }
+var SOLID = { "T":1,"~":1,"o":1,"H":1,"R":1,"F":1,"L":1,"S":1 };
+function solid(x,y){ return SOLID[tileAt(x,y)] === 1; }
+function isTallGrass(x,y){ return tileAt(x,y) === ","; }
+
+/* ===== Game state ===== */
+var G = {
+  mode:"title",
+  player:{ tx:10, ty:8, dir:"down", moving:false, fromX:10, fromY:8, prog:0, speed:0.16, frame:0, name:"JJ" },
+  party:[], box:[], caught:{}, orbs:8, flags:{ gotStarter:false }, steps:0
+};
+var held = { up:false, down:false, left:false, right:false };
+
+/* ===== NPCs & signs ===== */
+var NPCS = [
+  { tx:9, ty:8, dir:"down", body:"#e0e0e0", hair:"#8d6e63", name:"Prof. Cedar", role:"prof" },
+  { tx:9, ty:6, dir:"down", body:"#f48fb1", hair:"#ffffff", name:"Nurse Willow", role:"heal" },
+  { tx:22, ty:24, dir:"left", body:"#90caf9", hair:"#5d4037", name:"Ranger Bo", role:"talk",
+    lines:["The deep grass to the west hides tougher Buddies.","A rare purple Gloomoth roams there. Good luck, JJ!"] },
+  { tx:6, ty:11, dir:"right", body:"#ffab91", hair:"#3e2723", name:"Kid Mika", role:"talk",
+    lines:["My Buddy fainted... take it to Nurse Willow up north!","She heals your whole team for free."] }
+];
+function npcAt(x,y){ for(var i=0;i<NPCS.length;i++){ if(NPCS[i].tx===x&&NPCS[i].ty===y) return NPCS[i]; } return null; }
+var SIGNS = {
+  "16,7":"TOWN OF JAYHAVEN - Home of the bravest Buddy trainers.",
+  "5,15":"Prof. Cedar Lab. New trainers get their first Buddy here!",
+  "16,16":"Tall grass ahead. Wild Buddies live inside. Walk carefully!",
+  "21,16":"Route 1 - Catch Buddies with Buddy Orbs from your Bag.",
+  "32,22":"Route 2 - Stronger Buddies roam this deep grass."
+};
+
+/* ===== Sprite drawing ===== */
+function rr(x,y,w,h){ ctx.fillRect(x|0,y|0,w|0,h|0); }
+function drawCreature(cx, cy, s, sp, faceRight){
+  var b=sp.body, a=sp.accent;
+  ctx.save();
+  if(faceRight){ ctx.translate(cx*2,0); ctx.scale(-1,1); }
+  // shadow
+  ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath();
+  ctx.ellipse(cx, cy+s*0.52, s*0.5, s*0.16, 0, 0, 7); ctx.fill();
+  // body
+  ctx.fillStyle=b; ctx.beginPath(); ctx.ellipse(cx, cy, s*0.46, s*0.44, 0, 0, 7); ctx.fill();
+  // ears
+  ctx.fillStyle=a; ctx.beginPath(); ctx.ellipse(cx-s*0.28, cy-s*0.4, s*0.14, s*0.2,0,0,7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+s*0.28, cy-s*0.4, s*0.14, s*0.2,0,0,7); ctx.fill();
+  // belly
+  ctx.fillStyle="rgba(255,255,255,.55)"; ctx.beginPath();
+  ctx.ellipse(cx, cy+s*0.12, s*0.24, s*0.26,0,0,7); ctx.fill();
+  // feet
+  ctx.fillStyle=a; rr(cx-s*0.3, cy+s*0.34, s*0.22, s*0.16); rr(cx+s*0.08, cy+s*0.34, s*0.22, s*0.16);
+  // eyes
+  ctx.fillStyle="#1a1a1a";
+  ctx.beginPath(); ctx.arc(cx-s*0.16, cy-s*0.06, s*0.07,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.16, cy-s*0.06, s*0.07,0,7); ctx.fill();
+  ctx.fillStyle="#fff";
+  ctx.beginPath(); ctx.arc(cx-s*0.14, cy-s*0.09, s*0.025,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+s*0.18, cy-s*0.09, s*0.025,0,7); ctx.fill();
+  ctx.restore();
+}
+function drawHuman(sx, sy, dir, body, hair, frame){
+  var bob = (frame%2===0)?0:1;
+  ctx.fillStyle="rgba(0,0,0,.2)"; ctx.beginPath();
+  ctx.ellipse(sx+16, sy+28, 10, 3, 0,0,7); ctx.fill();
+  // legs
+  ctx.fillStyle="#37474f"; rr(sx+9, sy+20-bob, 5, 8); rr(sx+18, sy+20+bob, 5, 8);
+  // body
+  ctx.fillStyle=body; rr(sx+8, sy+10, 16, 12);
+  // head
+  ctx.fillStyle="#ffe0b2"; rr(sx+9, sy+2, 14, 10);
+  // hair
+  ctx.fillStyle=hair; rr(sx+8, sy+1, 16, 5);
+  if(dir==="down"){ ctx.fillStyle="#1a1a1a"; rr(sx+12,sy+7,2,2); rr(sx+18,sy+7,2,2); }
+  else if(dir==="up"){ ctx.fillStyle=hair; rr(sx+8,sy+1,16,8); }
+  else if(dir==="left"){ ctx.fillStyle="#1a1a1a"; rr(sx+11,sy+7,2,2); }
+  else { ctx.fillStyle="#1a1a1a"; rr(sx+19,sy+7,2,2); }
+}
+function drawTile(ch, sx, sy){
+  ctx.fillStyle="#5aa84b"; rr(sx,sy,TS,TS); // grass base under everything
+  if(ch==="~"){ ctx.fillStyle="#3d7fd6"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="rgba(255,255,255,.25)"; rr(sx+4,sy+8,10,2); rr(sx+16,sy+20,10,2); }
+  else if(ch==="#"){ ctx.fillStyle="#d9c39a"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="rgba(0,0,0,.06)"; rr(sx,sy,TS,2); rr(sx,sy,2,TS); }
+  else if(ch==="o"){ ctx.fillStyle="#8d9199"; ctx.beginPath(); ctx.ellipse(sx+16,sy+18,12,10,0,0,7); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.2)"; ctx.beginPath(); ctx.ellipse(sx+12,sy+13,4,3,0,0,7); ctx.fill(); }
+  else if(ch==="T"){ ctx.fillStyle="#3f7a35"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="#6b4226"; rr(sx+14,sy+20,4,10);
+    ctx.fillStyle="#2f6b2a"; ctx.beginPath(); ctx.arc(sx+16,sy+14,13,0,7); ctx.fill();
+    ctx.fillStyle="#3d8a36"; ctx.beginPath(); ctx.arc(sx+11,sy+11,6,0,7); ctx.fill(); }
+  else if(ch===","){ ctx.fillStyle="#4c9a3f"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="#3c7c31"; for(var i=0;i<4;i++){ rr(sx+3+i*8, sy+18, 3, 12); rr(sx+6+i*8, sy+12, 3, 18); } }
+  else if(ch==="f"){ ctx.fillStyle="#e91e63"; rr(sx+6,sy+8,4,4); rr(sx+20,sy+18,4,4);
+    ctx.fillStyle="#ffca28"; rr(sx+18,sy+6,4,4); rr(sx+8,sy+20,4,4); }
+  else if(ch==="R"){ ctx.fillStyle="#b0472e"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="rgba(0,0,0,.12)"; rr(sx,sy+TS-4,TS,4); }
+  else if(ch==="H"||ch==="L"){ ctx.fillStyle=(ch==="L")?"#c8bfa6":"#caa27a"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="rgba(0,0,0,.08)"; rr(sx,sy,TS,2); }
+  else if(ch==="D"||ch==="E"){ ctx.fillStyle=(ch==="E")?"#c8bfa6":"#caa27a"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="#5d3a1a"; rr(sx+8,sy+8,16,24); ctx.fillStyle="#ffca28"; rr(sx+20,sy+20,3,3); }
+  else if(ch==="S"){ ctx.fillStyle="#5aa84b"; rr(sx,sy,TS,TS);
+    ctx.fillStyle="#6b4226"; rr(sx+7,sy+16,3,14); rr(sx+22,sy+16,3,14);
+    ctx.fillStyle="#a5764b"; rr(sx+4,sy+6,24,14); ctx.fillStyle="#3e2723"; rr(sx+7,sy+10,18,2); rr(sx+7,sy+14,14,2); }
+  else if(ch==="F"){ ctx.fillStyle="#8d6e63"; rr(sx+2,sy+10,28,4); rr(sx+6,sy+6,4,18); rr(sx+22,sy+6,4,18); }
+  // "." grass already drawn
+}
+
+/* ===== Overworld render ===== */
+var camPx=0, camPy=0;
+function renderWorld(){
+  var p=G.player;
+  var rx=p.fromX+(p.tx-p.fromX)*p.prog;
+  var ry=p.fromY+(p.ty-p.fromY)*p.prog;
+  camPx=Math.max(0, Math.min(rx*TS+TS/2-W/2, MW*TS-W));
+  camPy=Math.max(0, Math.min(ry*TS+TS/2-H/2, MH*TS-H));
+  ctx.fillStyle="#5aa84b"; rr(0,0,W,H);
+  var c0=Math.floor(camPx/TS), r0=Math.floor(camPy/TS);
+  for(var ty=r0; ty<=r0+VR; ty++){
+    for(var tx=c0; tx<=c0+VC; tx++){
+      var sx=tx*TS-camPx, sy=ty*TS-camPy;
+      drawTile(tileAt(tx,ty), sx, sy);
+    }
+  }
+  for(var i=0;i<NPCS.length;i++){ var n=NPCS[i];
+    if(n.tx>=c0-1&&n.tx<=c0+VC+1&&n.ty>=r0-1&&n.ty<=r0+VR+1)
+      drawHuman(n.tx*TS-camPx, n.ty*TS-camPy, n.dir, n.body, n.hair, 0);
+  }
+  var frame=p.moving?(Math.floor(p.prog*4)%2):0;
+  drawHuman(rx*TS-camPx, ry*TS-camPy, p.dir, "#2196f3", "#5d4037", frame);
+  // mini HUD
+  ctx.fillStyle="rgba(16,18,40,.72)"; rr(6,6,150,26);
+  ctx.fillStyle="#ffcc33"; ctx.font="13px Trebuchet MS"; ctx.textBaseline="middle";
+  ctx.fillText("Team " + G.party.length + "/6", 14, 20);
+  ctx.fillText("Orbs " + G.orbs, 78, 20);
+}
+
+/* ===== Movement & encounters ===== */
+function updateWorld(){
+  var p=G.player;
+  if(!p.moving){
+    var d = held.up?"up": held.down?"down": held.left?"left": held.right?"right": null;
+    if(d) stepMove(d);
+  } else {
+    p.prog += p.speed;
+    if(p.prog>=1){ p.prog=0; p.moving=false; onStep(); }
+  }
+}
+function delta(d){ return d==="up"?[0,-1]: d==="down"?[0,1]: d==="left"?[-1,0]:[1,0]; }
+function stepMove(d){
+  var p=G.player; p.dir=d; var dd=delta(d); var nx=p.tx+dd[0], ny=p.ty+dd[1];
+  if(solid(nx,ny) || npcAt(nx,ny)) return;
+  p.fromX=p.tx; p.fromY=p.ty; p.tx=nx; p.ty=ny; p.moving=true; p.prog=0;
+}
+function onStep(){
+  G.steps++;
+  if(isTallGrass(G.player.tx, G.player.ty) && Math.random()<0.16) return wildEncounter();
+  if(G.steps % 24 === 0) saveGame(true);
+}
+function wildEncounter(){
+  var deep = G.player.ty>=17;
+  var pool = deep?WILD_DEEP:WILD_COMMON;
+  var id = pool[Math.floor(Math.random()*pool.length)];
+  var lvl = deep ? 4+Math.floor(Math.random()*4) : 2+Math.floor(Math.random()*3);
+  if(G.party.length===0){ openDialog("", "A wild Buddy leaps out... but you have no team! Best to run.", null); }
+  startBattle(makeMon(id, lvl), true);
+}
+function interact(){
+  var p=G.player, dd=delta(p.dir); var fx=p.tx+dd[0], fy=p.ty+dd[1];
+  var n=npcAt(fx,fy);
+  if(n) return talkNPC(n);
+  var s=SIGNS[fx+","+fy];
+  if(s) return openDialog("", s, null);
+}
+function talkNPC(n){
+  if(n.role==="prof"){
+    if(!G.flags.gotStarter) return starterFlow(n);
+    return openDialog(n.name, "Take good care of your Buddies, JJ. Adventure awaits!", null);
+  }
+  if(n.role==="heal"){
+    return openDialog(n.name, "Let me tend to your team...", function(){ healParty(); toast("Your team is fully healed!"); });
+  }
+  openDialog(n.name, n.lines || ["Hello there, JJ!"], null);
+}
+function healParty(){ for(var i=0;i<G.party.length;i++){ var m=G.party[i]; m.hp=m.maxhp; } saveGame(true); }
+
+/* ===== Input router ===== */
+function input(k){
+  if(G.mode==="title") return titleInput(k);
+  if(G.mode==="dialog") return dialogInput(k);
+  if(G.mode==="choice") return choiceInput(k);
+  if(G.mode==="battle") return battleInput(k);
+  // world
+  if(k==="action") interact();
+  else if(k==="back") openTeamMenu();
+}
+var KEYMAP = { ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",
+  w:"up",s:"down",a:"left",d:"right",W:"up",S:"down",A:"left",D:"right",
+  z:"action",Z:"action"," ":"action",Enter:"action",x:"back",X:"back",Escape:"back",Backspace:"back" };
+window.addEventListener("keydown", function(e){
+  var m=KEYMAP[e.key]; if(!m) return; e.preventDefault();
+  if(m==="up"||m==="down"||m==="left"||m==="right"){
+    if(G.mode==="world"){ held[m]=true; } else input(m);
+  } else input(m);
+});
+window.addEventListener("keyup", function(e){
+  var m=KEYMAP[e.key]; if(m&&held.hasOwnProperty(m)) held[m]=false;
+});
+/* touch */
+function bindTouch(){
+  var pads=document.querySelectorAll("[data-d]");
+  pads.forEach(function(el){
+    var d=el.getAttribute("data-d");
+    el.addEventListener("touchstart", function(ev){ ev.preventDefault();
+      if(G.mode==="world") held[d]=true; else input(d); }, {passive:false});
+    el.addEventListener("touchend", function(ev){ ev.preventDefault(); held[d]=false; }, {passive:false});
+  });
+  document.querySelectorAll("[data-k]").forEach(function(el){
+    var k=el.getAttribute("data-k")==="a"?"action":"back";
+    el.addEventListener("touchstart", function(ev){ ev.preventDefault(); input(k); }, {passive:false});
+  });
+}
+
+/* ===== Buddy instances & leveling ===== */
+function makeMon(id, level){
+  var sp=SPECIES[id], b=sp.base;
+  var maxhp = b.hp + level*3 + 6;
+  return { id:id, sp:sp, name:sp.name, level:level, maxhp:maxhp, hp:maxhp,
+    atk:b.atk+level, def:b.def+level, spd:b.spd+level, xp:0, moves:sp.moves.slice() };
+}
+function xpToNext(level){ return 14 + level*10; }
+function gainXp(mon, amt, msgs){
+  mon.xp += amt; msgs.push(mon.name + " gained " + amt + " XP.");
+  while(mon.xp >= xpToNext(mon.level)){
+    mon.xp -= xpToNext(mon.level); mon.level++;
+    mon.maxhp += 3; mon.hp += 3; mon.atk++; mon.def++; mon.spd++;
+    msgs.push(mon.name + " grew to level " + mon.level + "!");
+  }
+}
+function addBuddy(mon){
+  if(G.party.length < 6){ G.party.push(mon); return "team"; }
+  G.box.push(mon); return "box";
+}
+function firstAble(){ for(var i=0;i<G.party.length;i++){ if(G.party[i].hp>0) return i; } return -1; }
+
+/* ===== Dialog (DOM overlay) ===== */
+var dlgEl=document.getElementById("dialog");
+function openDialog(who, textOrArr, onEnd){
+  var lines = (typeof textOrArr==="string")?[textOrArr]:textOrArr;
+  G.prevMode = (G.mode==="dialog")?G.prevMode:G.mode;
+  G.dialog = { lines:lines, i:0, onEnd:onEnd };
+  G.mode="dialog";
+  dlgEl.classList.add("on");
+  drawDialog();
+}
+function drawDialog(){
+  var d=G.dialog;
+  dlgEl.querySelector(".who").textContent = "";
+  dlgEl.querySelector(".txt").textContent = d.lines[d.i];
+  var more = dlgEl.querySelector(".more");
+  more.style.display = (d.i < d.lines.length-1) ? "block" : "block";
+}
+function dialogInput(k){
+  if(k!=="action" && k!=="back") return;
+  var d=G.dialog; d.i++;
+  if(d.i >= d.lines.length){
+    dlgEl.classList.remove("on");
+    G.mode = G.prevMode || "world";
+    var cb=d.onEnd; G.dialog=null; if(cb) cb();
+  } else drawDialog();
+}
+
+/* ===== Choice (DOM overlay) ===== */
+var choiceEl=document.getElementById("choice");
+function openChoice(opts, onPick){
+  G.choicePrev = G.mode;
+  G.choice = { opts:opts, sel:0, onPick:onPick };
+  G.mode="choice"; choiceEl.classList.add("on"); drawChoice();
+}
+function drawChoice(){
+  var c=G.choice, h="";
+  for(var i=0;i<c.opts.length;i++){ h += "<div class=\"opt" + (i===c.sel?" sel":"") + "\">" + c.opts[i] + "</div>"; }
+  choiceEl.innerHTML=h;
+}
+function choiceInput(k){
+  var c=G.choice;
+  if(k==="up"){ c.sel=(c.sel-1+c.opts.length)%c.opts.length; drawChoice(); }
+  else if(k==="down"){ c.sel=(c.sel+1)%c.opts.length; drawChoice(); }
+  else if(k==="action"){ choiceEl.classList.remove("on"); G.mode=G.choicePrev; var f=c.onPick; var s=c.sel; G.choice=null; if(f) f(s); }
+  else if(k==="back"){ choiceEl.classList.remove("on"); G.mode=G.choicePrev; var g=c.onPick; G.choice=null; if(g) g(-1); }
+}
+
+/* ===== Starter flow ===== */
+function starterFlow(n){
+  openDialog(n.name, ["Welcome, JJ! Every trainer needs a first Buddy.","Choose wisely - Grass, Fire, or Water?"], function(){
+    openChoice(["Sprucub  (Grass)","Emberkit (Fire)","Dribblet (Water)"], function(i){
+      if(i<0){ openDialog(n.name, "Take your time. Come back when ready!", null); return; }
+      var ids=["sprucub","emberkit","dribblet"], pick=ids[i];
+      var mon=makeMon(pick, 5); addBuddy(mon); G.flags.gotStarter=true; G.caught[pick]=true;
+      openDialog(n.name, [SPECIES[pick].name + " chose you, JJ!", "Explore the tall grass to find and catch more Buddies.","Use Buddy Orbs from the Catch menu in battle!"], function(){ saveGame(true); });
+    });
+  });
+}
+
+/* ===== Team menu (overworld pause) ===== */
+function openTeamMenu(){
+  if(G.party.length===0){ toast("You have no Buddies yet - see Prof. Cedar!"); return; }
+  var opts=G.party.map(function(m){ return m.name+" L"+m.level+"  "+m.hp+"/"+m.maxhp; });
+  opts.push("Save Game"); opts.push("Close");
+  openChoice(opts, function(i){
+    if(i<0) return;
+    if(i===opts.length-2){ saveGame(false); }
+    else if(i===opts.length-1){ /* close */ }
+  });
+}
+
+/* ===== Toast ===== */
+var toastEl=document.getElementById("toast"), toastT=0;
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("on"); clearTimeout(toastT);
+  toastT=setTimeout(function(){ toastEl.classList.remove("on"); }, 1800); }
+
+/* ===== Save / load ===== */
+var SAVE_KEY="bmon_save_v1";
+function serMon(m){ return {id:m.id,level:m.level,hp:m.hp,maxhp:m.maxhp,atk:m.atk,def:m.def,spd:m.spd,xp:m.xp}; }
+function deMon(o){ var m=makeMon(o.id, o.level); m.hp=o.hp; m.maxhp=o.maxhp; m.atk=o.atk; m.def=o.def; m.spd=o.spd; m.xp=o.xp; return m; }
+function saveGame(silent){
+  try{
+    var data={ player:{tx:G.player.tx,ty:G.player.ty,dir:G.player.dir,name:G.player.name},
+      party:G.party.map(serMon), box:G.box.map(serMon), caught:G.caught, orbs:G.orbs, flags:G.flags, steps:G.steps };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    if(!silent) toast("Game saved!");
+  }catch(e){ if(!silent) toast("Save failed."); }
+}
+function hasSave(){ return !!localStorage.getItem(SAVE_KEY); }
+function loadGame(){
+  try{
+    var data=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!data) return false;
+    G.player.tx=data.player.tx; G.player.ty=data.player.ty; G.player.dir=data.player.dir||"down";
+    G.player.name=data.player.name||"JJ"; G.player.moving=false; G.player.prog=0;
+    G.player.fromX=G.player.tx; G.player.fromY=G.player.ty;
+    G.party=(data.party||[]).map(deMon); G.box=(data.box||[]).map(deMon);
+    G.caught=data.caught||{}; G.orbs=(data.orbs!=null)?data.orbs:8; G.flags=data.flags||{gotStarter:false}; G.steps=data.steps||0;
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ===== Battle engine ===== */
+function eMoveOf(m){ return MOVES[m.moves[Math.floor(Math.random()*m.moves.length)]]; }
+function hit(a, d, mv){
+  var mult=typeMult(mv.type, d.sp.type);
+  var stab=(mv.type===a.sp.type)?1.5:1;
+  var dmg=Math.floor((a.atk*mv.power/(d.def+18))*mult*stab*(0.85+Math.random()*0.15))+1;
+  d.hp=Math.max(0, d.hp-dmg);
+  return { dmg:dmg, mult:mult };
+}
+function addEff(msgs, r){
+  if(r.mult>1) msgs.push("It is super effective!");
+  else if(r.mult>0 && r.mult<1) msgs.push("It is not very effective...");
+  else if(r.mult===0) msgs.push("It had no effect...");
+}
+function queueMsgs(arr, after){ var B=G.battle; B.msgs=arr; B.mi=0; B.phase="msg"; B.after=after; }
+function startBattle(wild, isWild){
+  var idx=firstAble(); if(idx<0) return;
+  G.battle={ wild:wild, isWild:isWild, me:idx, phase:"msg", sel:0, forced:false, msgs:[], mi:0, after:null };
+  G.mode="battle";
+  queueMsgs(["A wild " + wild.name + " (L" + wild.level + ") appeared!"], function(){ G.battle.phase="menu"; G.battle.sel=0; });
+}
+function afterTurn(){
+  var B=G.battle;
+  if(B.wild.hp<=0){ var msgs=[]; gainXp(G.party[B.me], B.wild.level*6+10, msgs); queueMsgs(msgs, endBattle); }
+  else if(G.party[B.me].hp<=0){ faintSeq(); }
+  else { B.phase="menu"; B.sel=0; }
+}
+function faintSeq(){
+  var B=G.battle, alive=firstAble();
+  if(alive>=0){ queueMsgs(["Choose your next Buddy!"], function(){ B.forced=true; B.phase="team"; B.sel=alive; }); }
+  else { queueMsgs(["Every Buddy fainted!"], function(){ endBattle(); whiteout(); }); }
+}
+function resolveTurn(pMove){
+  var B=G.battle, me=G.party[B.me], wild=B.wild, eMove=eMoveOf(wild), msgs=[];
+  var order=(me.spd>=wild.spd)?["p","e"]:["e","p"];
+  for(var i=0;i<2;i++){
+    if(order[i]==="p" && me.hp>0 && wild.hp>0){
+      var r=hit(me,wild,pMove); msgs.push(me.name+" used "+pMove.name+"!"); addEff(msgs,r);
+      if(wild.hp<=0) msgs.push("Wild "+wild.name+" fainted!");
+    } else if(order[i]==="e" && wild.hp>0 && me.hp>0){
+      var r2=hit(wild,me,eMove); msgs.push("Wild "+wild.name+" used "+eMove.name+"!"); addEff(msgs,r2);
+      if(me.hp<=0) msgs.push(me.name+" fainted!");
+    }
+  }
+  queueMsgs(msgs, afterTurn);
+}
+function doSwitch(i, voluntary){
+  var B=G.battle; B.me=i; B.forced=false; var msgs=[G.party[i].name+", go!"];
+  if(voluntary && B.wild.hp>0){ var e=eMoveOf(B.wild), r=hit(B.wild, G.party[i], e);
+    msgs.push("Wild "+B.wild.name+" used "+e.name+"!"); addEff(msgs,r);
+    if(G.party[i].hp<=0) msgs.push(G.party[i].name+" fainted!"); }
+  queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } });
+}
+function throwOrb(){
+  var B=G.battle, wild=B.wild, sp=wild.sp; G.orbs--;
+  var chance=0.15 + (1-wild.hp/wild.maxhp)*0.55 + (sp.catchRate/500);
+  chance=Math.max(0.05, Math.min(0.92, chance));
+  if(Math.random()<chance){
+    var mon=makeMon(wild.id, wild.level); mon.hp=Math.max(1, wild.hp);
+    var where=addBuddy(mon); G.caught[wild.id]=true;
+    var m=["You threw a Buddy Orb...","Gotcha! "+wild.name+" was caught!"];
+    if(where==="box") m.push(wild.name+" was sent to your Box.");
+    queueMsgs(m, function(){ saveGame(true); endBattle(); });
+  } else {
+    var msgs=["You threw a Buddy Orb...", wild.name+" broke free!"];
+    if(wild.hp>0){ var e=eMoveOf(wild), me=G.party[B.me], r=hit(wild,me,e);
+      msgs.push("Wild "+wild.name+" used "+e.name+"!"); addEff(msgs,r);
+      if(me.hp<=0) msgs.push(me.name+" fainted!"); }
+    queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } });
+  }
+}
+function attemptRun(){
+  var B=G.battle, me=G.party[B.me];
+  var chance=Math.max(0.25, Math.min(0.95, 0.5+(me.spd-B.wild.spd)*0.05));
+  if(Math.random()<chance){ queueMsgs(["You got away safely!"], endBattle); }
+  else { var msgs=["You could not get away!"]; var e=eMoveOf(B.wild), r=hit(B.wild,me,e);
+    msgs.push("Wild "+B.wild.name+" used "+e.name+"!"); addEff(msgs,r);
+    if(me.hp<=0) msgs.push(me.name+" fainted!");
+    queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } }); }
+}
+function endBattle(){ G.battle=null; G.mode="world"; saveGame(true); }
+function whiteout(){ healParty(); var p=G.player; p.tx=10; p.ty=8; p.fromX=10; p.fromY=8; p.moving=false; p.prog=0;
+  toast("Your team was healed at home."); saveGame(true); }
+
+function battleInput(k){
+  var B=G.battle; if(!B) return;
+  if(B.phase==="msg"){ if(k==="action"||k==="back"){ B.mi++; if(B.mi>=B.msgs.length){ var a=B.after; B.after=null; B.msgs=[]; B.mi=0; if(a) a(); } } return; }
+  if(B.phase==="menu"){
+    if(k==="up"&&B.sel>=2) B.sel-=2; else if(k==="down"&&B.sel<2) B.sel+=2;
+    else if(k==="left"&&B.sel%2===1) B.sel--; else if(k==="right"&&B.sel%2===0) B.sel++;
+    else if(k==="action"){
+      if(B.sel===0){ B.phase="fight"; B.sel=0; }
+      else if(B.sel===1){ if(G.orbs<=0) queueMsgs(["You have no Buddy Orbs!"], function(){ B.phase="menu"; B.sel=0; }); else throwOrb(); }
+      else if(B.sel===2){ B.phase="team"; B.sel=(firstAble()>=0?firstAble():0); }
+      else attemptRun();
+    }
+    return;
+  }
+  if(B.phase==="fight"){
+    var mv=G.party[B.me].moves;
+    if(k==="up") B.sel=(B.sel-1+mv.length)%mv.length;
+    else if(k==="down") B.sel=(B.sel+1)%mv.length;
+    else if(k==="action") resolveTurn(MOVES[mv[B.sel]]);
+    else if(k==="back"){ B.phase="menu"; B.sel=0; }
+    return;
+  }
+  if(B.phase==="team"){
+    var n=G.party.length;
+    if(k==="up") B.sel=(B.sel-1+n)%n;
+    else if(k==="down") B.sel=(B.sel+1)%n;
+    else if(k==="action"){ var t=G.party[B.sel];
+      if(t.hp>0 && B.sel!==B.me) doSwitch(B.sel, !B.forced);
+      else if(t.hp<=0) toast("That Buddy has fainted!");
+    }
+    else if(k==="back" && !B.forced){ B.phase="menu"; B.sel=0; }
+    return;
+  }
+}
+
+/* ===== Battle render ===== */
+function btxt(s,x,y,color,size,align){ ctx.fillStyle=color; ctx.font=(size||14)+"px Trebuchet MS";
+  ctx.textAlign=align||"left"; ctx.textBaseline="middle"; ctx.fillText(s,x,y); ctx.textAlign="left"; }
+function hpPanel(x,y,mon){
+  ctx.fillStyle="rgba(16,18,40,.9)"; rr(x,y,152,44);
+  ctx.strokeStyle="#3a4270"; ctx.lineWidth=2; ctx.strokeRect(x+0.5,y+0.5,151,43);
+  btxt(mon.name+"  L"+mon.level, x+8, y+13, "#fff", 13);
+  ctx.fillStyle="#222"; rr(x+8,y+24,136,8);
+  var pct=Math.max(0,mon.hp/mon.maxhp), col=pct>0.5?"#4caf50":pct>0.2?"#ffb300":"#e53935";
+  ctx.fillStyle=col; rr(x+8,y+24,136*pct,8);
+  btxt(Math.max(0,mon.hp)+"/"+mon.maxhp, x+8, y+38, "#cfe0ff", 10);
+}
+function renderBattle(){
+  var B=G.battle; if(!B){ renderWorld(); return; }
+  var me=G.party[B.me], wild=B.wild;
+  var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#8fd0ff"); g.addColorStop(1,"#cfeeff");
+  ctx.fillStyle=g; rr(0,0,W,H);
+  ctx.fillStyle="#a6e07a"; rr(0,H*0.58,W,H*0.42);
+  ctx.fillStyle="rgba(0,0,0,.10)";
+  ctx.beginPath(); ctx.ellipse(W*0.72,H*0.40,70,18,0,0,7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(W*0.26,H*0.66,82,20,0,0,7); ctx.fill();
+  drawCreature(W*0.72, H*0.33, 80, wild.sp, false);
+  drawCreature(W*0.26, H*0.58, 98, me.sp, true);
+  hpPanel(14, 14, wild);
+  hpPanel(W-166, H*0.44, me);
+  var py=H-104; ctx.fillStyle="rgba(16,18,40,.96)"; rr(6,py,W-12,98);
+  ctx.strokeStyle="#ffcc33"; ctx.lineWidth=3; ctx.strokeRect(7.5,py+1.5,W-15,95);
+  if(B.phase==="msg"){ btxt(B.msgs[B.mi]||"", 22, py+42, "#fff", 17); btxt("Z / A to continue", W-24, py+82, "#ffcc33", 12, "right"); }
+  else if(B.phase==="menu"){ var opts=["Fight","Catch","Team","Run"];
+    for(var i=0;i<4;i++){ var ox=(i%2===0)?52:W*0.55; var oy=py+36+Math.floor(i/2)*34; var sd=(B.sel===i);
+      if(sd) btxt(">", ox-22, oy, "#ffcc33", 18); btxt(opts[i], ox, oy, sd?"#ffcc33":"#fff", 19); }
+    btxt("Orbs: "+G.orbs, W-24, py+16, "#cfe0ff", 12, "right");
+  }
+  else if(B.phase==="fight"){ var mv=me.moves;
+    for(var j=0;j<mv.length;j++){ var m=MOVES[mv[j]]; var oy=py+30+j*24; var sd=(B.sel===j);
+      if(sd) btxt(">", 24, oy, "#ffcc33", 16); btxt(m.name, 44, oy, sd?"#ffcc33":"#fff", 16);
+      btxt(m.type+"   PWR "+m.power, W*0.55, oy, "#9fb0e0", 13); }
+    btxt("X / B to go back", W-24, py+88, "#ffcc33", 11, "right");
+  }
+  else if(B.phase==="team"){
+    for(var t=0;t<G.party.length;t++){ var pm=G.party[t]; var oy=py+22+t*13; var sd=(B.sel===t);
+      var col=pm.hp<=0?"#e57373":(sd?"#ffcc33":"#fff");
+      if(sd) btxt(">", 24, oy, "#ffcc33", 12); btxt(pm.name+"  L"+pm.level+"   "+Math.max(0,pm.hp)+"/"+pm.maxhp, 44, oy, col, 12); }
+    if(!B.forced) btxt("X / B to go back", W-24, py+92, "#ffcc33", 11, "right");
+  }
+}
+
+/* ===== Title & boot ===== */
+var titleEl=document.getElementById("title");
+var titleMenu=document.getElementById("titleMenu");
+function setTitleSel(i){ G.titleSel=i; var b=titleMenu.querySelectorAll(".btn");
+  for(var k=0;k<b.length;k++){ b[k].classList.toggle("sel", k===i); } }
+function titleInput(k){
+  if(k==="up"||k==="down"){ setTitleSel(1-G.titleSel); }
+  else if(k==="action"){ if(G.titleSel===0) newGame(); else continueGame(); }
+}
+function enterWorld(){ titleEl.classList.remove("on"); G.mode="world"; }
+function newGame(){
+  G.party=[]; G.box=[]; G.caught={}; G.orbs=8; G.flags={gotStarter:false}; G.steps=0;
+  var p=G.player; p.tx=10; p.ty=8; p.fromX=10; p.fromY=8; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ";
+  enterWorld();
+  openDialog("", ["Welcome to Jayhaven, JJ!","Prof. Cedar is right beside you.","Press Z / A to talk to him and choose your first Buddy!"], null);
+}
+function continueGame(){
+  if(hasSave() && loadGame()){ enterWorld(); toast("Welcome back, JJ!"); }
+  else toast("No saved adventure found.");
+}
+
+/* ===== Boot ===== */
+setTitleSel(0);
+titleMenu.querySelectorAll(".btn").forEach(function(b){
+  b.addEventListener("click", function(){ if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); });
+});
+bindTouch();
+resize();
+function loop(){
+  if(G.mode==="world") updateWorld();
+  if(G.mode==="battle") renderBattle(); else renderWorld();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
