@@ -1,5 +1,5 @@
 /* Buddymon service worker — offline PWA cache */
-var V = "bmon-v0.3.0";
+var V = "bmon-v0.4.0";
 var ASSETS = [
   "./",
   "./index.html",
@@ -25,14 +25,12 @@ self.addEventListener("fetch", function(e){
   var isHTML = req.mode === "navigate" || req.destination === "document"
     || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
   if(isHTML){
-    // network-first so updates roll out, cache fallback for offline
     e.respondWith(
       fetch(req).then(function(r){
         var cp = r.clone(); caches.open(V).then(function(c){ c.put(req, cp); }); return r;
       }).catch(function(){ return caches.match(req).then(function(r){ return r || caches.match("./index.html"); }); })
     );
   } else {
-    // cache-first for static assets
     e.respondWith(caches.match(req).then(function(r){
       return r || fetch(req).then(function(rr){
         var cp = rr.clone(); caches.open(V).then(function(c){ c.put(req, cp); }); return rr;

@@ -30,7 +30,7 @@
   .overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
     flex-direction:column; text-align:center; }
   .overlay.on{ display:flex; }
-  #title{ background:radial-gradient(circle at 50% 30%,#2b3f7a,#0c0e1a 75%); border-radius:8px; }
+  #title{ background:linear-gradient(180deg,rgba(12,14,26,.15),rgba(12,14,26,.55)); border-radius:8px; }
   #title h1{ font-size:52px; letter-spacing:2px; color:var(--accent);
     text-shadow:3px 3px 0 #11132a, 0 0 22px rgba(255,204,51,.5); }
   #title h2{ font-size:20px; color:#cfe0ff; margin-top:2px; letter-spacing:6px; }
@@ -240,7 +240,7 @@ var G={ mode:"title", mapId:"town",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   party:[], box:[], caught:{}, seen:{}, orbs:8, badges:{}, flags:{gotStarter:false}, steps:0, settings:{sound:true,run:false} };
 var held={ up:false,down:false,left:false,right:false,run:false };
-var TICK=0, FX={fade:0}, PARTS=[];
+var TICK=0, FX={fade:0}, PARTS=[], SAVEFLASH=0;
 
 /* ===== Sprites ===== */
 function rr(x,y,w,h){ ctx.fillRect(x|0,y|0,w|0,h|0); }
@@ -310,6 +310,7 @@ function renderWorld(){
   ctx.fillStyle="#ffcc33"; ctx.font="13px Trebuchet MS"; ctx.textBaseline="middle"; ctx.textAlign="left";
   ctx.fillText(m.name, 14, 20);
   ctx.fillStyle="#cfe0ff"; ctx.textAlign="right"; ctx.fillText("Team "+G.party.length+"/6   Orbs "+G.orbs, 196, 20); ctx.textAlign="left";
+  if(SAVEFLASH>0){ ctx.globalAlpha=Math.min(1,SAVEFLASH/48); ctx.fillStyle="#2e7d32"; rr(W-32,8,22,20); ctx.strokeStyle="#dfffe0"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W-27,18); ctx.lineTo(W-23,22); ctx.lineTo(W-15,13); ctx.stroke(); ctx.globalAlpha=1; }
 }
 
 /* ===== Movement, warps, encounters ===== */
@@ -321,7 +322,7 @@ function delta(d){ return d==="up"?[0,-1]:d==="down"?[0,1]:d==="left"?[-1,0]:[1,
 function stepMove(d){ var p=G.player; p.dir=d; var dd=delta(d), nx=p.tx+dd[0], ny=p.ty+dd[1];
   if(solid(nx,ny)) return; p.fromX=p.tx; p.fromY=p.ty; p.tx=nx; p.ty=ny; p.moving=true; p.prog=0; }
 function doWarp(w){ sfx("warp"); FX.fade=1; G.mapId=w.map; var p=G.player; p.tx=w.x; p.ty=w.y; p.fromX=w.x; p.fromY=w.y; p.moving=false; p.prog=0; toast("Entering "+MAPS[w.map].name); saveGame(true); }
-function onStep(){ G.steps++; if(isTallGrass(G.player.tx,G.player.ty)) spawnRustle(G.player.tx*TS+16,G.player.ty*TS+24);
+function onStep(){ G.steps++; if(G.settings.run||held.run) spawnDust(G.player.tx*TS+16,G.player.ty*TS+28); if(isTallGrass(G.player.tx,G.player.ty)) spawnRustle(G.player.tx*TS+16,G.player.ty*TS+24);
   var w=warpAt(G.player.tx,G.player.ty); if(w){ doWarp(w); return; }
   var wc=curMap().wild;
   if(wc && isTallGrass(G.player.tx,G.player.ty) && G.party.length>0 && firstAble()>=0 && Math.random()<0.16) return wildEncounter(wc);
@@ -466,7 +467,7 @@ function applyNpcs(states){ if(!states) return; for(var mid in MAPS){ MAPS[mid].
 function saveGame(silent){ try{ var d={ mapId:G.mapId,
     player:{tx:G.player.tx,ty:G.player.ty,dir:G.player.dir,name:G.player.name,color:G.player.color},
     party:G.party.map(serMon), box:G.box.map(serMon), caught:G.caught, seen:G.seen, orbs:G.orbs, badges:G.badges, flags:G.flags, steps:G.steps, settings:G.settings, npcs:serNpcs() };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(d)); if(!silent) toast("Game saved!"); }catch(e){ if(!silent) toast("Save failed."); } }
+  localStorage.setItem(SAVE_KEY, JSON.stringify(d)); SAVEFLASH=48; if(!silent) toast("Game saved!"); }catch(e){ if(!silent) toast("Save failed."); } }
 function hasSave(){ return !!localStorage.getItem(SAVE_KEY); }
 function loadGame(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return false;
   G.mapId=d.mapId||"town"; G.player.tx=d.player.tx; G.player.ty=d.player.ty; G.player.dir=d.player.dir||"down";
@@ -549,6 +550,16 @@ function sparkles(cx,cy,t){ for(var i=0;i<7;i++){ var a=i*0.9+t*0.15, rad=20+((t
 function drawOrb(x,y,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.fillStyle="#e53935"; ctx.beginPath(); ctx.arc(0,0,8,0,7); ctx.fill(); ctx.fillStyle="#f5f5f5"; ctx.beginPath(); ctx.arc(0,3,8,0,Math.PI); ctx.fill(); ctx.fillStyle="#222"; rr(-8,-1,16,2); ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(0,0,3,0,7); ctx.fill(); ctx.fillStyle="#bbb"; ctx.beginPath(); ctx.arc(0,0,1.4,0,7); ctx.fill(); ctx.restore(); }
 function spawnRustle(wx,wy){ for(var i=0;i<5;i++) PARTS.push({x:wx,y:wy,vx:(Math.random()-0.5)*1.6,vy:-Math.random()*1.6-0.5,life:14+Math.random()*8,c:i%2?"#dff5b0":"#a8d878"}); }
 function updateParts(){ for(var i=PARTS.length-1;i>=0;i--){ var p=PARTS[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.14; p.life--; if(p.life<=0) PARTS.splice(i,1); } }
+function spawnDust(wx,wy){ for(var i=0;i<3;i++) PARTS.push({x:wx,y:wy,vx:(Math.random()-0.5)*1.2,vy:-Math.random()*0.8,life:10+Math.random()*6,c:"#cdb089"}); }
+function drawCloud(cx,cy,r){ ctx.fillStyle="rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(cx,cy,r,r*0.62,0,0,7); ctx.fill(); ctx.beginPath(); ctx.ellipse(cx+r*0.8,cy+3,r*0.7,r*0.5,0,0,7); ctx.fill(); ctx.beginPath(); ctx.ellipse(cx-r*0.8,cy+4,r*0.6,r*0.45,0,0,7); ctx.fill(); }
+function saveSummary(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return null; var team=(d.party||[]).length; var b=d.badges?Object.keys(d.badges).filter(function(k){ return d.badges[k]; }).length:0; var nm=(d.player&&d.player.name)?d.player.name:"JJ"; return nm+"  -  "+team+" Buddies  -  "+b+" badge"+(b===1?"":"s"); }catch(e){ return null; } }
+function renderTitle(){ var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#7fc4ff"); g.addColorStop(0.6,"#bfe6ff"); g.addColorStop(1,"#d9f0d0"); ctx.fillStyle=g; rr(0,0,W,H);
+  ctx.fillStyle="rgba(255,241,180,.85)"; ctx.beginPath(); ctx.arc(W-64,58,32,0,7); ctx.fill();
+  for(var c=0;c<4;c++){ var cx=((TICK*0.3+c*150)%(W+140))-70, cy=38+(c*29)%74; drawCloud(cx,cy,17+c*3); }
+  ctx.fillStyle="#5aa84b"; rr(0,H*0.72,W,H*0.28); ctx.fillStyle="#4c9a3f"; for(var x=0;x<W;x+=14){ var hh=6+((x*7)%5); rr(x,H*0.72-hh,3,hh); }
+  var trio=["sprucub","emberkit","dribblet"]; for(var i=0;i<3;i++){ var sp=SPECIES[trio[i]], bx=W*0.27+i*W*0.23, by=H*0.82+Math.sin(TICK*0.06+i*1.5)*6; drawCreature(bx,by,46,sp,i%2===0); }
+  for(var s=0;s<7;s++){ var a=TICK*0.02+s*0.9, sx2=W*0.5+Math.cos(a)*150, sy2=H*0.38+Math.sin(a*1.3)*66; ctx.fillStyle="rgba(255,255,255,"+(0.35+0.35*Math.sin(TICK*0.1+s))+")"; rr(sx2,sy2,2,2); }
+  var ss=saveSummary(); if(ss){ ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle"; var w2=ctx.measureText("Continue: "+ss).width+20; ctx.fillStyle="rgba(16,18,40,.55)"; rr(W/2-w2/2,H-27,w2,19); ctx.fillStyle="#dfffe0"; ctx.fillText("Continue: "+ss,W/2,H-17); ctx.textAlign="left"; } }
 function renderBattle(){ var B=G.battle; if(!B){ renderWorld(); return; } var me=G.party[B.me], wild=B.wild;
   var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#8fd0ff"); g.addColorStop(1,"#cfeeff"); ctx.fillStyle=g; rr(0,0,W,H);
   ctx.fillStyle="#a6e07a"; rr(0,H*0.58,W,H*0.42);
@@ -596,7 +607,7 @@ function continueGame(){ if(hasSave()&&loadGame()){ enterWorld(); toast("Welcome
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else renderWorld(); requestAnimationFrame(loop); }
+function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 /* ===== PWA: register service worker for offline install ===== */
