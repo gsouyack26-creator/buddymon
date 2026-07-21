@@ -329,6 +329,7 @@ var G={ mode:"title", mapId:"town", weather:"none",
   follow:{tx:18,ty:10,fromX:18,fromY:10},
   party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}, keyItems:{}, badges:{}, flags:{gotStarter:false,visited:{}}, steps:0, settings:{sound:true,run:false} };
 var held={ up:false,down:false,left:false,right:false,run:false };
+var _swUpdatePending=false, _swReloading=false;
 var TICK=0, FX={fade:0,shake:0}, PARTS=[], SAVEFLASH=0;
 
 /* ===== Sprites ===== */
@@ -939,14 +940,36 @@ setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
 var _lastT=0, MAX_DT=FRAME_MS*2;
-function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0) dt=FRAME_MS; else if(dt>MAX_DT) dt=MAX_DT; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
+function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0) dt=FRAME_MS; else if(dt>MAX_DT) dt=MAX_DT; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld();
+  if(_swUpdatePending && !_swReloading && G.mode!=="battle" && !G.player.moving){ _swReloading=true; saveGame(true); toast("Updating to the newest version..."); setTimeout(function(){ location.reload(); }, 700); }
+  requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
-/* ===== PWA: register service worker for offline install ===== */
+/* ===== PWA: register service worker for offline install, and actively
+   check for updates. iOS "Add to Home Screen" apps get suspended and
+   resumed rather than reloaded when reopened, so the browser's own
+   passive update check may never run for days. Force a check whenever
+   the app becomes visible/focused, plus a periodic fallback, and reload
+   (at a safe moment, see loop() above) once a new version takes over. */
 if("serviceWorker" in navigator){
+  var _swReg=null;
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){});
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      _swReg=reg;
+      reg.addEventListener("updatefound", function(){
+        var nw=reg.installing; if(!nw) return;
+        nw.addEventListener("statechange", function(){
+          if(nw.state==="installed" && navigator.serviceWorker.controller) _swUpdatePending=true;
+        });
+      });
+    }).catch(function(){});
   });
+  navigator.serviceWorker.addEventListener("controllerchange", function(){ _swUpdatePending=true; });
+  var _swCheckForUpdate=function(){ if(_swReg){ try{ _swReg.update(); }catch(e){ /* update() can throw if the registration is gone; ignore */ } } };
+  document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible") _swCheckForUpdate(); });
+  window.addEventListener("pageshow", _swCheckForUpdate);
+  window.addEventListener("focus", _swCheckForUpdate);
+  setInterval(_swCheckForUpdate, 5*60*1000);
 }
 </script>
 </body>
