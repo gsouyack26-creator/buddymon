@@ -275,7 +275,15 @@ MAPS.league={ name:"Buddy League", theme:"gym", wild:null,
   warps:{ "9,12":{map:"town",x:18,y:5} },
   npcs:[
     {tx:9,ty:3,dir:"down",body:"#90caf9",hair:"#5d4037",name:"Champion Kade",role:"trainer",boss:true,champion:true,team:[["thumparoo",18],["voltmastiff",20],["flarelynx",22]],reward:12,coins:600,pre:["JJ! You made it all the way to the League!","I have been training every day since you beat me.","I am the CHAMPION now. Only one of us leaves this arena on top!","Give it everything!"],win:["...","I lost. Fair and square.","You are the true Champion, JJ!","Every trainer in the region will hear your name!"]},
-    {tx:3,ty:11,dir:"right",body:"#e0e0e0",hair:"#8d6e63",name:"League Attendant",role:"talk",lines:["Welcome to the Buddy League!","Only trainers with all three badges may battle the Champion."]}
+    {tx:3,ty:11,dir:"right",body:"#e0e0e0",hair:"#8d6e63",name:"League Attendant",role:"talk",lines:["Welcome to the Buddy League!","Only trainers with all three badges may battle the Champion."]},
+    {tx:15,ty:11,dir:"left",body:"#ce93d8",hair:"#6a1b9a",name:"Portal Keeper",role:"portal",to:{map:"rainbow",x:8,y:5},require:"champion",lines:["A shimmering portal glows beside me...","Only Champions may pass to the Rainbow Route!"]}
+  ] };
+MAPS.rainbow={ name:"Rainbow Route", theme:"grass",
+  grid:["TTTTTTTTTTTTTTTT","T,,,,....,,,,..T","T,,,,....,,,,..T","T,,,,....,,,,..T","T..............T","T....RRR.......T","T....HDH.......T","T,,,,....,,,,..T","T,,,,....,,,,..T","T,,,,....,,,,..T","T,,,,....,,,,..T","TTTTTTTXTTTTTTTT"],
+  wild:{ pool:["timbermane","flarelynx","tidewhirl","voltmastiff","bloomstag","emberat","marisplash","gloomoth","luminox","voltray","finwave","crabalisk"], min:22, max:30, night:["gloomoth","voltmastiff","emberat","luminox","timbermane"] },
+  warps:{ "7,11":{map:"league",x:9,y:10} },
+  npcs:[
+    {tx:5,ty:6,dir:"down",body:"#ce93d8",hair:"#4a148c",name:"Rainbow Trainer",role:"trainer",team:[["timbermane",22],["tidewhirl",23],["flarelynx",24]],reward:8,coins:400,pre:["This route is only for Champions!"],win:["Impressive as always!"]}
   ] };
 function curMap(){ return MAPS[G.mapId]; }
 function tileAt(x,y){ var g=curMap().grid; if(y<0||y>=g.length) return "T"; var row=g[y]; if(x<0||x>=row.length) return "T"; return row.charAt(x); }
@@ -355,6 +363,8 @@ var WEATHER_MAPS={town:true,beach:true};
 function rollWeather(mapId){ if(!WEATHER_MAPS[mapId]){ G.weather="none"; return; } var r=Math.random(); G.weather = r<0.55?"none":r<0.78?"rain":"sun"; }
 function weatherLabel(){ if(G.weather==="rain") return "Rain"; if(G.weather==="sun") return "Sun"; return ""; }
 function isNight(){ var h=(new Date()).getHours(); return h>=20||h<6; }
+var SWARM_ROTATION=["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup","gloomoth","finling","gullby","crabbo","zapfin"];
+function dailySwarmId(){ var doy=Math.floor((new Date()).getTime()/86400000); return SWARM_ROTATION[Math.abs(doy) % SWARM_ROTATION.length]; }
 function resolveWildPool(wc){ if(!wc) return null; if(isNight() && wc.night) return wc.night; return wc.pool; }
 function applyTint(theme){ if(theme!=="grass"&&theme!=="beach") return; var h=(new Date()).getHours(), col=null; if(h>=20||h<5) col="rgba(18,22,66,0.36)"; else if(h<7) col="rgba(255,150,80,0.15)"; else if(h>=18) col="rgba(255,138,60,0.17)"; if(col){ ctx.fillStyle=col; rr(0,0,W,H); } }
 function renderWorld(){
@@ -402,7 +412,10 @@ function onStep(){ G.steps++; if(G.settings.run||held.run) spawnDust(G.player.tx
   if(wc && isTallGrass(G.player.tx,G.player.ty) && G.party.length>0 && firstAble()>=0 && Math.random()<0.16) return wildEncounter(wc);
   if(G.steps%24===0) saveGame(true);
 }
-function pickWild(pool){ var id=pool[Math.floor(Math.random()*pool.length)];
+function pickWild(pool){
+  var swarm=dailySwarmId();
+  if(pool.indexOf(swarm)>=0 && Math.random()<0.55) return swarm;
+  var id=pool[Math.floor(Math.random()*pool.length)];
   if(SPECIES[id].rare && Math.random()<0.55) id=pool[Math.floor(Math.random()*pool.length)];
   return id; }
 function wildEncounter(wc){ var pool=resolveWildPool(wc), id=pickWild(pool), lvl=wc.min+Math.floor(Math.random()*(wc.max-wc.min+1));
@@ -441,6 +454,7 @@ function talkNPC(n){
     var rodName={old:"Old Rod",good:"Good Rod",super:"Super Rod"}[give];
     return openDialog(n.name,["Take my "+rodName+"!","Better rods catch stronger Buddies."],function(){ G.keyItems.rod=true; G.keyItems.rodTier=Math.max(curTier,tier); sfx("catch"); toast("Got the "+rodName+"!"); saveGame(true); });
   }
+  if(n.role==="portal"){ if(n.require==="champion" && !G.flags.champion) return openDialog(n.name,"You need to be Champion to enter here.",null); return openDialog(n.name, n.lines||["A portal opens..."], function(){ doWarp(n.to); }); }
   if(n.role==="daily"){ var today=(new Date()).toISOString().slice(0,10); if(G.flags.lastGift===today) return openDialog(n.name,"Come back tomorrow for your daily gift, "+G.player.name+"!",null); G.flags.lastGift=today;
     var gifts=[["orbs",5,"5 Buddy Orbs"],["coins",200,"200 coins"],["potion",3,"3 Potions"],["rareCandy",1,"a Rare Candy"],["panacea",2,"2 Panaceas"],["superpotion",2,"2 Super Potions"]];
     var gpick=gifts[Math.floor(Math.random()*gifts.length)];
@@ -633,6 +647,7 @@ function questsInput(k){ if(k==="back"||k==="action"){ sfx("select"); G.mode="wo
 function renderQuests(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
   var q=computeQuests();
   ctx.fillStyle="#ffcc33"; ctx.font="20px Trebuchet MS"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("OBJECTIVES", 18, 24);
+  ctx.fillStyle="#9fd0ff"; ctx.font="11px Trebuchet MS"; ctx.fillText("Todays swarm: "+SPECIES[dailySwarmId()].name, 18, 42);
   ctx.textAlign="right"; ctx.fillStyle="#cfe0ff"; ctx.font="14px Trebuchet MS"; ctx.fillText(q.doneCount+" / "+q.list.length+" complete", W-18, 24); ctx.textAlign="left";
   for(var i=0;i<q.list.length;i++){ var it=q.list[i], y=54+i*26, active=(i===q.next);
     ctx.fillStyle=it.d?"#1c3a1f":(active?"#33305a":"#1a1c2e"); rr(14,y-11,W-28,22);
@@ -881,10 +896,10 @@ function resetNpcs(){ for(var mid in MAPS) MAPS[mid].npcs.forEach(function(n){ n
 function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
   var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ"; p.color="#2196f3";
   G.follow={tx:18,ty:10,fromX:18,fromY:10};
-  rollWeather(G.mapId); enterWorld(); var nm=askName("JJ"); G.player.name=nm;
+  rollWeather(G.mapId); enterWorld(); var nm=askName("JJ"); G.player.name=nm; setTimeout(function(){ var sid=dailySwarmId(); toast("Todays swarm: "+SPECIES[sid].name+"!"); }, 600);
   openChoice(["Blue hero","Red hero","Green hero","Purple hero"], function(i){ if(i<0) i=0; G.player.color=HERO_COLORS[i][1];
     openDialog("", ["Welcome to Jayhaven, "+nm+"!","Prof. Cedar is right nearby.","Press Z / A to talk to him and pick your first Buddy!"], null); }); }
-function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterWorld(); toast("Welcome back, "+G.player.name+"!"); } else toast("No saved adventure found."); }
+function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterWorld(); toast("Welcome back, "+G.player.name+"!"); setTimeout(function(){ var sid=dailySwarmId(); toast("Todays swarm: "+SPECIES[sid].name+"!"); }, 1800); } else toast("No saved adventure found."); }
 
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
