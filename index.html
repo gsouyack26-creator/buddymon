@@ -203,6 +203,7 @@ var MAPS={
       {tx:12,ty:11,dir:"down",body:"#b39ddb",hair:"#311b92",name:"PC Terminal",role:"pc"},
       {tx:26,ty:11,dir:"down",body:"#1976d2",hair:"#263238",name:"Sailor Pip",role:"ferry",to:{map:"beach",x:11,y:13},ride:["Want to sail to Sunset Beach?","Anchors away!"]},
       {tx:17,ty:9,dir:"down",body:"#e0e0e0",hair:"#8d6e63",name:"Prof. Cedar",role:"prof"},
+      {tx:11,ty:3,dir:"down",body:"#f06292",hair:"#4a148c",name:"Buddy Coach Rae",role:"coach"},
       {tx:25,ty:9,dir:"down",body:"#f48fb1",hair:"#ffffff",name:"Nurse Willow",role:"heal"},
       {tx:13,ty:11,dir:"down",body:"#ffab91",hair:"#3e2723",name:"Kid Mika",role:"talk",lines:["Nurse Willow heals your whole team for free!","She is standing right up north by the street."]},
       {tx:20,ty:15,dir:"down",body:"#90caf9",hair:"#5d4037",name:RIVAL_NAME,role:"trainer",rival:true,team:[["nibbit",8],["cindermouse",9]],reward:4,
@@ -247,7 +248,9 @@ MAPS.beach={ name:"Sunset Beach", theme:"beach", wild:null,
   warps:{ "16,10":{map:"gym2",x:7,y:9} },
   npcs:[
     {tx:3,ty:13,dir:"down",body:"#1976d2",hair:"#263238",name:"Sailor Pip",role:"ferry",to:{map:"town",x:25,y:11},ride:["Ready to sail back to Jayhaven?","Off we go!"]},
-    {tx:5,ty:7,dir:"up",body:"#00897b",hair:"#4e342e",name:"Fisher Kai",role:"fisher"},
+    {tx:5,ty:7,dir:"up",body:"#00897b",hair:"#4e342e",name:"Fisher Kai",role:"fisher",giveRod:"old"},
+    {tx:14,ty:11,dir:"up",body:"#26a69a",hair:"#004d40",name:"Fisher Coral",role:"fisher",giveRod:"good",require:"meadow",lines:["I sell the finest Good Rod on the coast."]},
+    {tx:19,ty:13,dir:"up",body:"#00695c",hair:"#001d1a",name:"Fisher Abyss",role:"fisher",giveRod:"super",require:"champion",lines:["Only Champions may wield the Super Rod."]},
     {tx:9,ty:8,dir:"down",body:"#4dd0e1",hair:"#01579b",name:"Swimmer Dax",role:"trainer",team:[["finling",9],["puddlet",10]],reward:3,coins:60,pre:["The waves make me strong! Battle me!"],win:["Glub... you win!"]}
   ] };
 MAPS.gym2={ name:"Tide Gym", theme:"gym", wild:null,
@@ -293,7 +296,7 @@ function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 var G={ mode:"title", mapId:"town",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
-  party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0}, keyItems:{}, badges:{}, flags:{gotStarter:false,visited:{}}, steps:0, settings:{sound:true,run:false} };
+  party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}, keyItems:{}, badges:{}, flags:{gotStarter:false,visited:{}}, steps:0, settings:{sound:true,run:false} };
 var held={ up:false,down:false,left:false,right:false,run:false };
 var TICK=0, FX={fade:0,shake:0}, PARTS=[], SAVEFLASH=0;
 
@@ -403,6 +406,14 @@ function interact(){ var p=G.player, dd=delta(p.dir), fx=p.tx+dd[0], fy=p.ty+dd[
   if(tileAt(fx,fy)==="~" && G.keyItems.rod) return goFish();
   var s=SIGNS[G.mapId+","+fx+","+fy]; if(s) return openDialog("", s, null);
 }
+function coachRename(){
+  var opts=G.party.map(function(m){ return dname(m); }); opts.push("Back");
+  openChoice(opts, function(i){ if(i<0||i>=G.party.length) return; var m=G.party[i]; var nm=askName(m.nick||m.name); m.nick=nm; saveGame(true); toast("Renamed to "+nm+"!"); }); }
+function coachRelearn(){
+  var opts=G.party.map(function(m){ return dname(m)+" L"+m.level; }); opts.push("Back");
+  openChoice(opts, function(i){ if(i<0||i>=G.party.length) return; var m=G.party[i]; var ls=m.sp.learn||{}, avail=[]; for(var lvl in ls){ if(parseInt(lvl,10)<=m.level){ var mv=ls[lvl]; if(m.moves.indexOf(mv)<0 && MOVES[mv]) avail.push([mv,MOVES[mv].name,parseInt(lvl,10)]); } } if(avail.length===0){ toast("Nothing to relearn."); return; }
+    var mopts=avail.map(function(a){ return a[1]+"  (L"+a[2]+")"; }); mopts.push("Back");
+    openChoice(mopts, function(j){ if(j<0||j>=avail.length) return; var key=avail[j][0]; var ms=[]; learnMove(m,key,ms); saveGame(true); toast(dname(m)+" relearned "+MOVES[key].name+"!"); }); }); }
 function talkNPC(n){
   if(n.role==="prof"){ if(!G.flags.gotStarter) return starterFlow(n); return openDialog(n.name,"Take good care of your Buddies, JJ. Adventure awaits!",null); }
   if(n.role==="heal") return openDialog(n.name,"Let me tend to your team...",function(){ healParty(); sfx("catch"); toast("Your team is fully healed!"); });
@@ -413,7 +424,17 @@ function talkNPC(n){
   if(n.role==="shop") return openShop(n);
   if(n.role==="pc") return openBox();
   if(n.role==="ferry") return openDialog(n.name, n.ride||["Climb aboard!"], function(){ doWarp(n.to); });
-  if(n.role==="fisher"){ if(G.keyItems.rod) return openDialog(n.name,"Catch anything? Face the water and press action to fish!",null); return openDialog(n.name,["Here, take my Old Rod!","Stand beside water and press action to fish for Buddies."],function(){ G.keyItems.rod=true; sfx("catch"); toast("Got the Old Rod!"); saveGame(true); }); }
+  if(n.role==="fisher"){
+    var give=n.giveRod||"old", tier={old:1,good:2,super:3}[give], curTier=G.keyItems.rodTier||0;
+    if(curTier>=tier) return openDialog(n.name,"Catch anything? Face the water and press action to fish!",null);
+    if(n.require==="meadow" && !G.badges.meadow) return openDialog(n.name,["I only trade rods with badge-earning trainers.","Come back with the Meadow Badge!"],null);
+    if(n.require==="champion" && !G.flags.champion) return openDialog(n.name,["I only give this rod to the Champion.","Win the Buddy League and return!"],null);
+    var rodName={old:"Old Rod",good:"Good Rod",super:"Super Rod"}[give];
+    return openDialog(n.name,["Take my "+rodName+"!","Better rods catch stronger Buddies."],function(){ G.keyItems.rod=true; G.keyItems.rodTier=Math.max(curTier,tier); sfx("catch"); toast("Got the "+rodName+"!"); saveGame(true); });
+  }
+  if(n.role==="coach"){
+    if(G.party.length===0) return openDialog(n.name,"Come back with a Buddy on your team!",null);
+    openDialog(n.name, ["Need a nickname change or move retraining?"], function(){ openChoice(["Rename a Buddy","Relearn a move","Nothing today"], function(i){ if(i===0) coachRename(); else if(i===1) coachRelearn(); }); }); return; }
   if(n.role==="legendary"){ if(firstAble()<0) return openDialog(n.name,"You need an able Buddy to approach the shrine.",null);
     return openDialog(n.name, n.lines, function(){ G.seen[n.species]=true; startBattle(makeMon(n.species,n.level||30),true); }); }
   if(n.role==="trainer"){ if(n.defeated){
@@ -522,10 +543,16 @@ function renderDex(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
 }
 
 /* ===== Team / pause menu ===== */
-var ITEMS={ potion:{name:"Potion",heal:25}, superpotion:{name:"Super Potion",heal:60}, revive:{name:"Revive"} };
-var SHOP=[["orb","Buddy Orb",20],["potion","Potion",30],["superpotion","Super Potion",80],["revive","Revive",120]];
+var ITEMS={ potion:{name:"Potion",heal:25}, superpotion:{name:"Super Potion",heal:60}, revive:{name:"Revive"}, rareCandy:{name:"Rare Candy"}, panacea:{name:"Panacea"} };
+var SHOP=[["orb","Buddy Orb",20],["potion","Potion",30],["superpotion","Super Potion",80],["revive","Revive",120],["panacea","Panacea",150],["rareCandy","Rare Candy",300]];
+var ROD_POOLS={
+  1:{ids:["finling","gullby","crabbo","zapfin","puddlet","dribblet"], min:6, max:11, hit:0.62},
+  2:{ids:["finling","gullby","crabbo","zapfin","puddlet","finwave","gullgeist","crabalisk"], min:10, max:16, hit:0.72},
+  3:{ids:["finwave","gullgeist","crabalisk","voltray","zapfin","tidewhirl","marisplash"], min:16, max:24, hit:0.82}
+};
 function goFish(){ openDialog("","You cast your line into the water...", function(){
-  if(Math.random()<0.62){ var pool=["finling","gullby","crabbo","zapfin","puddlet","dribblet"]; var id=pool[Math.floor(Math.random()*pool.length)], lvl=6+Math.floor(Math.random()*6); G.seen[id]=true; if(firstAble()<0){ toast("No Buddy able to battle!"); return; } startBattle(makeMon(id,lvl),true); } else openDialog("","Nothing bit this time...",null); }); }
+  var tier=G.keyItems.rodTier||1, pool=ROD_POOLS[tier]||ROD_POOLS[1];
+  if(Math.random()<pool.hit){ var id=pool.ids[Math.floor(Math.random()*pool.ids.length)]; var lvl=pool.min+Math.floor(Math.random()*(pool.max-pool.min+1)); G.seen[id]=true; if(firstAble()<0){ toast("No Buddy able to battle!"); return; } startBattle(makeMon(id,lvl),true); } else openDialog("","Nothing bit this time...",null); }); }
 function openShop(n){ openDialog(n.name, "Welcome to the Buddy Mart! You have "+G.coins+" coins.", function(){ shopMenu(n); }); }
 function shopMenu(n){ var opts=SHOP.map(function(it){ return it[1]+"  "+it[2]+"c"; }); opts.push("Leave");
   openChoice(opts, function(i){ if(i<0||i>=SHOP.length) return; var it=SHOP[i];
@@ -538,13 +565,20 @@ function openBox(){ var opts=[], map=[];
   openChoice(opts, function(sel){ if(sel<0) return; var a=map[sel]; if(!a||a[0]==="close") return;
     if(a[0]==="wd"){ if(G.party.length>=6){ toast("Team is full (6)!"); openBox(); return; } G.party.push(G.box.splice(a[1],1)[0]); sfx("select"); saveGame(true); toast("Withdrew to team."); openBox(); }
     else { if(G.party.length<=1){ toast("Keep at least 1 Buddy!"); openBox(); return; } G.box.push(G.party.splice(a[1],1)[0]); sfx("select"); saveGame(true); toast("Deposited to box."); openBox(); } }); }
-function openBagField(){ var opts=["Potion x"+G.items.potion,"Super Potion x"+G.items.superpotion,"Revive x"+G.items.revive,"Close"];
-  openChoice(opts, function(i){ if(i<0||i===3) return; var k=["potion","superpotion","revive"][i];
+function _bagTargetList(){ var lab=[], tm=[]; for(var q=0;q<G.party.length;q++){ lab.push(dname(G.party[q])+" "+G.party[q].hp+"/"+G.party[q].maxhp+(G.party[q].status?" ["+G.party[q].status.toUpperCase()+"]":"")); tm.push(q); } lab.push("Back"); return {lab:lab,tm:tm}; }
+function openBagField(){ var opts=["Potion x"+G.items.potion,"Super Potion x"+G.items.superpotion,"Revive x"+G.items.revive,"Panacea x"+G.items.panacea,"Rare Candy x"+G.items.rareCandy,"Close"];
+  var keys=["potion","superpotion","revive","panacea","rareCandy"];
+  openChoice(opts, function(i){ if(i<0||i===5) return; var k=keys[i];
     if(G.items[k]<=0){ toast("You have none!"); openBagField(); return; }
     if(k==="revive"){ var lab=[], fm=[]; for(var p=0;p<G.party.length;p++) if(G.party[p].hp<=0){ lab.push(dname(G.party[p])+" (fainted)"); fm.push(p); } if(!fm.length){ toast("No fainted Buddy."); openBagField(); return; } lab.push("Back");
-      openChoice(lab, function(s){ if(s<0||s>=fm.length){ openBagField(); return; } var m=G.party[fm[s]]; m.hp=Math.ceil(m.maxhp/2); G.items.revive--; sfx("catch"); saveGame(true); toast(dname(m)+" was revived!"); }); }
-    else { var heal=ITEMS[k].heal, lab2=[], tm=[]; for(var q=0;q<G.party.length;q++){ lab2.push(dname(G.party[q])+" "+G.party[q].hp+"/"+G.party[q].maxhp); tm.push(q); } lab2.push("Back");
-      openChoice(lab2, function(s){ if(s<0||s>=tm.length){ openBagField(); return; } var m=G.party[tm[s]]; if(m.hp<=0){ toast("Use a Revive first."); openBagField(); return; } if(m.hp>=m.maxhp){ toast("Already full HP."); openBagField(); return; } m.hp=Math.min(m.maxhp,m.hp+heal); G.items[k]--; sfx("catch"); saveGame(true); toast(dname(m)+" healed!"); }); } }); }
+      openChoice(lab, function(s){ if(s<0||s>=fm.length){ openBagField(); return; } var m=G.party[fm[s]]; m.hp=Math.ceil(m.maxhp/2); G.items.revive--; sfx("catch"); saveGame(true); toast(dname(m)+" was revived!"); }); return; }
+    if(k==="panacea"){ var t=_bagTargetList();
+      openChoice(t.lab, function(s){ if(s<0||s>=t.tm.length){ openBagField(); return; } var m=G.party[t.tm[s]]; if(!m.status){ toast("No status to cure."); openBagField(); return; } m.status=null; m.slpT=0; G.items.panacea--; sfx("catch"); saveGame(true); toast(dname(m)+" was cured!"); }); return; }
+    if(k==="rareCandy"){ var t2=_bagTargetList();
+      openChoice(t2.lab, function(s){ if(s<0||s>=t2.tm.length){ openBagField(); return; } var m=G.party[t2.tm[s]]; var xpNeeded=xpToNext(m.level)-m.xp; var ms=[]; gainXp(m,xpNeeded,ms); evolveCheck(m,ms); G.items.rareCandy--; sfx("level"); saveGame(true); toast(dname(m)+" grew to L"+m.level+"!"); }); return; }
+    var heal=ITEMS[k].heal, t3=_bagTargetList();
+    openChoice(t3.lab, function(s){ if(s<0||s>=t3.tm.length){ openBagField(); return; } var m=G.party[t3.tm[s]]; if(m.hp<=0){ toast("Use a Revive first."); openBagField(); return; } if(m.hp>=m.maxhp){ toast("Already full HP."); openBagField(); return; } m.hp=Math.min(m.maxhp,m.hp+heal); G.items[k]--; sfx("catch"); saveGame(true); toast(dname(m)+" healed!"); });
+  }); }
 function openTeamMenu(){ var np=G.party.length;
   var opts=G.party.map(function(m){ return dname(m)+" L"+m.level+"  "+m.hp+"/"+m.maxhp; });
   opts.push("Bag"); opts.push("Buddy Box"); opts.push("Buddydex"); opts.push("Objectives"); opts.push("Achievements"); opts.push("Coins: "+G.coins); opts.push("Sound: "+(G.settings.sound?"On":"Off")); opts.push("Run: "+(G.settings.run?"On":"Off")); opts.push("Save Game"); opts.push("Close");
@@ -642,7 +676,7 @@ function hasSave(){ return !!localStorage.getItem(SAVE_KEY); }
 function loadGame(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return false;
   G.mapId=d.mapId||"town"; G.player.tx=d.player.tx; G.player.ty=d.player.ty; G.player.dir=d.player.dir||"down";
   G.player.name=d.player.name||"JJ"; G.player.color=d.player.color||"#2196f3"; G.player.moving=false; G.player.prog=0; G.player.fromX=G.player.tx; G.player.fromY=G.player.ty;
-  G.party=(d.party||[]).map(deMon); G.box=(d.box||[]).map(deMon); G.caught=d.caught||{}; G.seen=d.seen||{}; G.orbs=(d.orbs!=null)?d.orbs:8; G.coins=(d.coins!=null)?d.coins:60; G.items=d.items||{potion:2,superpotion:0,revive:0}; G.keyItems=d.keyItems||{}; G.badges=d.badges||{}; G.flags=d.flags||{gotStarter:false}; if(!G.flags.visited) G.flags.visited={}; G.flags.visited[G.mapId]=true; G.steps=d.steps||0; G.settings=d.settings||{sound:true,run:false}; soundOn=G.settings.sound; applyNpcs(d.npcs);
+  G.party=(d.party||[]).map(deMon); G.box=(d.box||[]).map(deMon); G.caught=d.caught||{}; G.seen=d.seen||{}; G.orbs=(d.orbs!=null)?d.orbs:8; G.coins=(d.coins!=null)?d.coins:60; G.items=Object.assign({potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}, d.items||{}); G.keyItems=d.keyItems||{}; if(G.keyItems.rod && !G.keyItems.rodTier) G.keyItems.rodTier=1; G.badges=d.badges||{}; G.flags=d.flags||{gotStarter:false}; if(!G.flags.visited) G.flags.visited={}; G.flags.visited[G.mapId]=true; G.steps=d.steps||0; G.settings=d.settings||{sound:true,run:false}; soundOn=G.settings.sound; applyNpcs(d.npcs);
   G.follow={tx:G.player.tx,ty:G.player.ty,fromX:G.player.tx,fromY:G.player.ty}; return true; }catch(e){ return false; } }
 
 /* ===== Battle engine ===== */
@@ -828,7 +862,7 @@ function setTitleSel(i){ G.titleSel=i; var b=titleMenu.querySelectorAll(".btn");
 function titleInput(k){ if(k==="up"||k==="down"){ setTitleSel(1-G.titleSel); sfx("select"); } else if(k==="action"){ sfx("select"); if(G.titleSel===0) newGame(); else continueGame(); } }
 function enterWorld(){ titleEl.classList.remove("on"); G.mode="world"; }
 function resetNpcs(){ for(var mid in MAPS) MAPS[mid].npcs.forEach(function(n){ n.defeated=false; n.taken=false; n.gone=false; }); }
-function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
+function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
   var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ"; p.color="#2196f3";
   G.follow={tx:18,ty:10,fromX:18,fromY:10};
   enterWorld(); var nm=askName("JJ"); G.player.name=nm;
