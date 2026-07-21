@@ -306,6 +306,7 @@ MAPS.league={ name:"Buddy League", theme:"gym", wild:null,
   npcs:[
     {tx:9,ty:3,dir:"down",body:"#90caf9",hair:"#5d4037",name:"Champion Kade",role:"trainer",boss:true,champion:true,team:[["thumparoo",18],["voltmastiff",20],["flarelynx",22]],reward:12,coins:600,pre:["JJ! You made it all the way to the League!","I have been training every day since you beat me.","I am the CHAMPION now. Only one of us leaves this arena on top!","Give it everything!"],win:["...","I lost. Fair and square.","You are the true Champion, JJ!","Every trainer in the region will hear your name!"]},
     {tx:3,ty:11,dir:"right",body:"#e0e0e0",hair:"#8d6e63",name:"League Attendant",role:"talk",lines:["Welcome to the Buddy League!","Only trainers with all three badges may battle the Champion."]},
+    {tx:12,ty:8,dir:"down",body:"#c5cae9",hair:"#283593",name:"Hopeful Challenger",role:"talk",lines:["Champion Kade has not lost a single match yet...","I heard a rumor JJ from Jayhaven might finally beat him!"]},
     {tx:15,ty:11,dir:"left",body:"#ce93d8",hair:"#6a1b9a",name:"Portal Keeper",role:"portal",to:{map:"rainbow",x:8,y:5},require:"champion",lines:["A shimmering portal glows beside me...","Only Champions may pass to the Rainbow Route!"]}
   ] };
 MAPS.rainbow={ name:"Rainbow Route", theme:"grass",
@@ -332,7 +333,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.9";
+var GAME_VERSION="0.22.10";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
