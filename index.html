@@ -338,7 +338,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.23";
+var GAME_VERSION="0.22.24";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -675,6 +675,7 @@ function computeQuests(){
     {t:"Defeat your rival, Kade", d:rivalDone()},
     {t:"Earn the Meadow Badge (Leader Fern)", d:!!b.meadow},
     {t:"Sail to Sunset Beach with Sailor Pip", d:!!v.beach},
+    {t:"Get your team healed at Jayhaven Hospital", d:!!f.hospitalVisit},
     {t:"Earn the Tide Badge (Leader Marina)", d:!!b.tide},
     {t:"Explore Whisper Cave", d:!!v.cave},
     {t:"Earn the Spark Badge (Leader Volt)", d:!!b.spark},
