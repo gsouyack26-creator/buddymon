@@ -338,7 +338,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.22";
+var GAME_VERSION="0.22.23";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -561,7 +561,7 @@ function firstAble(){ for(var i=0;i<G.party.length;i++) if(G.party[i].hp>0) retu
 /* ===== Dialog ===== */
 var dlgEl=document.getElementById("dialog");
 function openDialog(who, textOrArr, onEnd){ var lines=(typeof textOrArr==="string")?[textOrArr]:textOrArr;
-  G.prevMode=(G.mode==="dialog")?G.prevMode:G.mode; G.dialog={lines:lines,i:0,onEnd:onEnd}; G.mode="dialog"; dlgEl.classList.add("on"); drawDialog(); }
+  G.prevMode=(G.mode==="dialog")?G.prevMode:G.mode; G.dialog={who:who,lines:lines,i:0,onEnd:onEnd}; G.mode="dialog"; dlgEl.classList.add("on"); drawDialog(); }
 function drawDialog(){ var d=G.dialog; dlgEl.querySelector(".who").textContent=d.who||""; dlgEl.querySelector(".txt").textContent=d.lines[d.i]; }
 function dialogInput(k){ if(k!=="action"&&k!=="back") return; sfx("select"); var d=G.dialog; d.i++;
   if(d.i>=d.lines.length){ dlgEl.classList.remove("on"); G.mode=G.prevMode||"world"; var cb=d.onEnd; G.dialog=null; if(cb) cb(); } else drawDialog(); }
