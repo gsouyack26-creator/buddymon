@@ -330,7 +330,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.4";
+var GAME_VERSION="0.22.5";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -728,6 +728,11 @@ function renderAchievements(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
 /* ===== Toast ===== */
 var toastEl=document.getElementById("toast"), toastT=0;
 function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(function(){ toastEl.classList.remove("on"); }, 1800); }
+var _toastQueue=[], _toastQueueT=0;
+function queueToast(msg){ _toastQueue.push(msg); if(_toastQueue.length===1) _showNextQueuedToast(); }
+function _showNextQueuedToast(){ if(!_toastQueue.length) return; toast(_toastQueue[0]); clearTimeout(_toastQueueT); _toastQueueT=setTimeout(function(){ _toastQueue.shift(); _showNextQueuedToast(); }, 1900); }
+function checkAchievements(){ if(!G.flags) return; if(!G.flags.achSeen) G.flags.achSeen={};
+  var a=computeAchievements(); for(var i=0;i<a.length;i++){ var it=a[i]; if(it.d && !G.flags.achSeen[it.n]){ G.flags.achSeen[it.n]=true; queueToast("\u2605 Achievement: "+it.n+"!"); } } }
 
 /* ===== Save / load ===== */
 var SAVE_KEY="bmon_save_v2";
@@ -735,7 +740,7 @@ function serMon(m){ return {id:m.id,nick:m.nick,level:m.level,hp:m.hp,maxhp:m.ma
 function deMon(o){ var m=makeMon(o.id,o.level); m.nick=o.nick||null; m.hp=o.hp; m.maxhp=o.maxhp; m.atk=o.atk; m.def=o.def; m.spd=o.spd; m.xp=o.xp; m.status=o.status||null; m.slpT=o.slpT||0; if(!m.nick) m.name=SPECIES[o.id].name; return m; }
 function serNpcs(){ var out={}; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(n){ if(n.defeated||n.taken||n.gone) out[mid+"|"+n.name]={defeated:!!n.defeated,taken:!!n.taken,gone:!!n.gone}; }); } return out; }
 function applyNpcs(states){ if(!states) return; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(n){ var s=states[mid+"|"+n.name]; if(s){ n.defeated=s.defeated; n.taken=s.taken; n.gone=s.gone; } }); } }
-function saveGame(silent){ try{ var d={ mapId:G.mapId,
+function saveGame(silent){ try{ checkAchievements(); var d={ mapId:G.mapId,
     player:{tx:G.player.tx,ty:G.player.ty,dir:G.player.dir,name:G.player.name,color:G.player.color},
     party:G.party.map(serMon), box:G.box.map(serMon), caught:G.caught, seen:G.seen, orbs:G.orbs, coins:G.coins, items:G.items, keyItems:G.keyItems, badges:G.badges, flags:G.flags, steps:G.steps, settings:G.settings, npcs:serNpcs() };
   localStorage.setItem(SAVE_KEY, JSON.stringify(d)); SAVEFLASH=48; if(!silent) toast("Game saved!"); }catch(e){ if(!silent) toast("Save failed."); } }
@@ -744,7 +749,9 @@ function loadGame(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!
   G.mapId=d.mapId||"town"; G.player.tx=d.player.tx; G.player.ty=d.player.ty; G.player.dir=d.player.dir||"down";
   G.player.name=d.player.name||"JJ"; G.player.color=d.player.color||"#2196f3"; G.player.moving=false; G.player.prog=0; G.player.fromX=G.player.tx; G.player.fromY=G.player.ty;
   G.party=(d.party||[]).map(deMon); G.box=(d.box||[]).map(deMon); G.caught=d.caught||{}; G.seen=d.seen||{}; G.orbs=(d.orbs!=null)?d.orbs:8; G.coins=(d.coins!=null)?d.coins:60; G.items=Object.assign({potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}, d.items||{}); G.keyItems=d.keyItems||{}; if(G.keyItems.rod && !G.keyItems.rodTier) G.keyItems.rodTier=1; G.badges=d.badges||{}; G.flags=d.flags||{gotStarter:false}; if(!G.flags.visited) G.flags.visited={}; G.flags.visited[G.mapId]=true; G.steps=d.steps||0; G.settings=d.settings||{sound:true,run:false}; soundOn=G.settings.sound; applyNpcs(d.npcs);
-  G.follow={tx:G.player.tx,ty:G.player.ty,fromX:G.player.tx,fromY:G.player.ty}; return true; }catch(e){ return false; } }
+  G.follow={tx:G.player.tx,ty:G.player.ty,fromX:G.player.tx,fromY:G.player.ty};
+  if(!G.flags.achSeen){ G.flags.achSeen={}; var seedA=computeAchievements(); for(var si=0;si<seedA.length;si++){ if(seedA[si].d) G.flags.achSeen[seedA[si].n]=true; } }
+  return true; }catch(e){ return false; } }
 
 /* ===== Battle engine ===== */
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
@@ -941,7 +948,7 @@ function setTitleSel(i){ G.titleSel=i; var b=titleMenu.querySelectorAll(".btn");
 function titleInput(k){ if(k==="up"||k==="down"){ setTitleSel(1-G.titleSel); sfx("select"); } else if(k==="action"){ sfx("select"); if(G.titleSel===0) newGame(); else continueGame(); } }
 function enterWorld(){ titleEl.classList.remove("on"); G.mode="world"; }
 function resetNpcs(){ for(var mid in MAPS) MAPS[mid].npcs.forEach(function(n){ n.defeated=false; n.taken=false; n.gone=false; }); }
-function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
+function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true},achSeen:{}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
   var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ"; p.color="#2196f3";
   G.follow={tx:18,ty:10,fromX:18,fromY:10};
   rollWeather(G.mapId); enterWorld(); var nm=askName("JJ"); G.player.name=nm; setTimeout(function(){ var sid=dailySwarmId(); toast("Todays swarm: "+SPECIES[sid].name+"!"); }, 600);
