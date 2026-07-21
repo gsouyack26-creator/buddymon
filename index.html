@@ -130,7 +130,20 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 window.addEventListener("orientationchange", function(){ [60,180,320,520,800].forEach(function(t){ setTimeout(resize,t); }); });
-if(window.visualViewport){ window.visualViewport.addEventListener("resize", resize); }
+/* visualViewport fires "resize" very often on iOS Safari -- including
+   during on-screen d-pad touch-drags, when the reported size can wobble
+   by a device-pixel or two as the browser recalculates mid-gesture.
+   Calling resize() synchronously on every one of those forces a full
+   canvas backing-store reset (cv.width=bw always implicitly clears the
+   canvas) even when nothing meaningfully changed, which shows up as a
+   full-screen flash exactly while walking. Debounce it so only a size
+   change that's still there after gestures settle actually triggers it. */
+if(window.visualViewport){
+  var _vvResizeT=null;
+  window.visualViewport.addEventListener("resize", function(){
+    clearTimeout(_vvResizeT); _vvResizeT=setTimeout(resize, 120);
+  });
+}
 
 /* ===== Sound (WebAudio beeps) ===== */
 var AC=null, soundOn=true;
@@ -339,7 +352,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.32";
+var GAME_VERSION="0.22.33";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
