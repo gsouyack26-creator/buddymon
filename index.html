@@ -394,7 +394,7 @@ function renderWorld(){
 
 /* ===== Movement, warps, encounters ===== */
 var FRAME_MS=1000/60;
-function updateWorld(dt){ var p=G.player; var step=(dt||FRAME_MS)/FRAME_MS; if(step>4) step=4; if(!p.moving) p.speed=(G.settings.run||held.run)?0.28:0.16;
+function updateWorld(dt){ var p=G.player; var step=(dt||FRAME_MS)/FRAME_MS; if(step>2) step=2; if(!p.moving) p.speed=(G.settings.run||held.run)?0.28:0.16;
   if(!p.moving){ var d=held.up?"up":held.down?"down":held.left?"left":held.right?"right":null; if(d) stepMove(d); }
   else { p.prog+=p.speed*step; if(p.prog>=1){ p.prog=0; p.moving=false; onStep(); } }
 }
@@ -914,8 +914,8 @@ function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterW
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-var _lastT=0;
-function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0||dt>100) dt=FRAME_MS; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
+var _lastT=0, MAX_DT=FRAME_MS*2;
+function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0) dt=FRAME_MS; else if(dt>MAX_DT) dt=MAX_DT; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 /* ===== PWA: register service worker for offline install ===== */
