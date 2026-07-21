@@ -181,9 +181,10 @@ var SPECIES={
   voltmastiff:{name:"Voltmastiff",type:"Electric",base:{hp:62,atk:19,def:14,spd:21},moves:["spark","bite","scratch","thunderwave"], body:"#fbc02d",accent:"#e65100",evolved:true,catchRate:30},
   marisplash: {name:"Marisplash", type:"Water",   base:{hp:68,atk:15,def:18,spd:13},moves:["splash","bubble"],         body:"#0097a7",accent:"#004d54",evolved:true,catchRate:35},
   bloomstag:  {name:"Bloomstag",  type:"Grass",   base:{hp:66,atk:16,def:16,spd:14},moves:["leaf","vine","tackle","sleeppowder"],    body:"#388e3c",accent:"#1b5e20",evolved:true,catchRate:35},
-  emberat:    {name:"Emberat",    type:"Fire",    base:{hp:60,atk:20,def:13,spd:16},moves:["flare","ember"],           body:"#c62828",accent:"#7f0000",evolved:true,catchRate:35}
+  emberat:    {name:"Emberat",    type:"Fire",    base:{hp:60,atk:20,def:13,spd:16},moves:["flare","ember"],           body:"#c62828",accent:"#7f0000",evolved:true,catchRate:35},
+  luminox:    {name:"Luminox",    type:"Electric", base:{hp:92,atk:30,def:26,spd:28},moves:["spark","splash","bite","thunderwave"],body:"#ffd700",accent:"#6a1b9a",legendary:true,catchRate:8}
 };
-var DEX_ORDER=["sprucub","timbermane","emberkit","flarelynx","dribblet","tidewhirl","nibbit","thumparoo","buzzle","vesperia","sparkpup","voltmastiff","puddlet","marisplash","leafling","bloomstag","cindermouse","emberat","finling","finwave","crabbo","crabalisk","gullby","gullgeist","zapfin","voltray","gloomoth"];
+var DEX_ORDER=["sprucub","timbermane","emberkit","flarelynx","dribblet","tidewhirl","nibbit","thumparoo","buzzle","vesperia","sparkpup","voltmastiff","puddlet","marisplash","leafling","bloomstag","cindermouse","emberat","finling","finwave","crabbo","crabalisk","gullby","gullgeist","zapfin","voltray","gloomoth","luminox"];
 
 /* ===== World maps (grids verified reachable by BFS mapgen) ===== */
 var RIVAL_NAME="Rival Kade";
@@ -236,7 +237,8 @@ var MAPS={
     warps:{ "9,15":{map:"town",x:2,y:24}, "10,1":{map:"gym3",x:7,y:9} },
     npcs:[
       {tx:2,ty:12,dir:"right",body:"#a1887f",hair:"#3e2723",name:"Hiker Cliff",role:"trainer",team:[["nibbit",8],["sparkpup",9]],reward:4,pre:["Caves make you strong! Show me your team!"],win:["You have grit, kid!"]},
-      {tx:17,ty:12,dir:"left",body:"#ffd54f",hair:"#5d4037",name:"Lost Bag",role:"item",item:"orbs",amt:5,lines:["You found a bag with 5 Buddy Orbs inside!"]}
+      {tx:17,ty:12,dir:"left",body:"#ffd54f",hair:"#5d4037",name:"Lost Bag",role:"item",item:"orbs",amt:5,lines:["You found a bag with 5 Buddy Orbs inside!"]},
+      {tx:16,ty:13,dir:"down",body:"#ffd700",hair:"#6a1b9a",name:"Radiant Shrine",role:"legendary",species:"luminox",level:32,lines:["The Radiant Shrine blazes with light...","Only a Champion may awaken what sleeps within.","LUMINOX awakens!"]}
     ]
   }
 };
@@ -277,6 +279,7 @@ function mapW(){ return curMap().grid[0].length; }
 function mapH(){ return curMap().grid.length; }
 var SOLID={ "T":1,"~":1,"o":1,"H":1,"R":1,"F":1,"L":1,"S":1 };
 function npcActive(n){ if(n.gone) return false;
+  if(n.role==="legendary") return !!(G.flags&&G.flags.champion) && !G.caught[n.species];
   if(n.role==="gate") return !G.badges[n.badge];
   if(n.rival) return !n.defeated;
   if(n.role==="item") return !n.taken;
@@ -411,7 +414,11 @@ function talkNPC(n){
   if(n.role==="pc") return openBox();
   if(n.role==="ferry") return openDialog(n.name, n.ride||["Climb aboard!"], function(){ doWarp(n.to); });
   if(n.role==="fisher"){ if(G.keyItems.rod) return openDialog(n.name,"Catch anything? Face the water and press action to fish!",null); return openDialog(n.name,["Here, take my Old Rod!","Stand beside water and press action to fish for Buddies."],function(){ G.keyItems.rod=true; sfx("catch"); toast("Got the Old Rod!"); saveGame(true); }); }
-  if(n.role==="trainer"){ if(n.defeated) return openDialog(n.name, (n.win&&n.win[n.win.length-1])?[n.win[n.win.length-1]]:["Good luck out there!"], null);
+  if(n.role==="legendary"){ if(firstAble()<0) return openDialog(n.name,"You need an able Buddy to approach the shrine.",null);
+    return openDialog(n.name, n.lines, function(){ G.seen[n.species]=true; startBattle(makeMon(n.species,n.level||30),true); }); }
+  if(n.role==="trainer"){ if(n.defeated){
+      if(n.boss||n.champion||n.rival) return openDialog(n.name, (n.win&&n.win[n.win.length-1])?[n.win[n.win.length-1]]:["Good luck out there!"], null);
+      return openDialog(n.name, ["Ready for a rematch, "+G.player.name+"?"], function(){ openChoice(["Rematch!","Not now"], function(i){ if(i!==0) return; n.rematches=(n.rematches||0)+1; startTrainer(n, Math.min(16,n.rematches*2+2)); }); }); }
     return openDialog(n.name, n.pre||["Let us battle!"], function(){ startTrainer(n); }); }
 }
 function healParty(){ for(var i=0;i<G.party.length;i++){ var m=G.party[i]; m.hp=m.maxhp; m.status=null; m.slpT=0; } saveGame(true); }
@@ -423,6 +430,7 @@ function input(k){
   if(G.mode==="choice") return choiceInput(k);
   if(G.mode==="dex") return dexInput(k);
   if(G.mode==="quests") return questsInput(k);
+  if(G.mode==="achievements") return achievementsInput(k);
   if(G.mode==="battle") return battleInput(k);
   if(k==="action") interact(); else if(k==="back") openTeamMenu();
 }
@@ -534,17 +542,18 @@ function openBagField(){ var opts=["Potion x"+G.items.potion,"Super Potion x"+G.
       openChoice(lab2, function(s){ if(s<0||s>=tm.length){ openBagField(); return; } var m=G.party[tm[s]]; if(m.hp<=0){ toast("Use a Revive first."); openBagField(); return; } if(m.hp>=m.maxhp){ toast("Already full HP."); openBagField(); return; } m.hp=Math.min(m.maxhp,m.hp+heal); G.items[k]--; sfx("catch"); saveGame(true); toast(dname(m)+" healed!"); }); } }); }
 function openTeamMenu(){ var np=G.party.length;
   var opts=G.party.map(function(m){ return dname(m)+" L"+m.level+"  "+m.hp+"/"+m.maxhp; });
-  opts.push("Bag"); opts.push("Buddy Box"); opts.push("Buddydex"); opts.push("Objectives"); opts.push("Coins: "+G.coins); opts.push("Sound: "+(G.settings.sound?"On":"Off")); opts.push("Run: "+(G.settings.run?"On":"Off")); opts.push("Save Game"); opts.push("Close");
+  opts.push("Bag"); opts.push("Buddy Box"); opts.push("Buddydex"); opts.push("Objectives"); opts.push("Achievements"); opts.push("Coins: "+G.coins); opts.push("Sound: "+(G.settings.sound?"On":"Off")); opts.push("Run: "+(G.settings.run?"On":"Off")); opts.push("Save Game"); opts.push("Close");
   openChoice(opts, function(i){ if(i<0) return;
     if(i<np){ var m=G.party[i]; openDialog(dname(m), [dname(m)+"  -  "+m.sp.type+" type  L"+m.level, "HP "+m.hp+"/"+m.maxhp+"   ATK "+m.atk+"   DEF "+m.def+"   SPD "+m.spd], null); }
     else if(i===np) openBagField();
     else if(i===np+1) openBox();
     else if(i===np+2) openDex();
     else if(i===np+3) openQuests();
-    else if(i===np+4){ }
-    else if(i===np+5){ G.settings.sound=!G.settings.sound; soundOn=G.settings.sound; sfx("select"); saveGame(true); toast("Sound "+(G.settings.sound?"On":"Off")); }
-    else if(i===np+6){ G.settings.run=!G.settings.run; saveGame(true); toast("Run "+(G.settings.run?"On":"Off")); }
-    else if(i===np+7) saveGame(false);
+    else if(i===np+4) openAchievements();
+    else if(i===np+5){ }
+    else if(i===np+6){ G.settings.sound=!G.settings.sound; soundOn=G.settings.sound; sfx("select"); saveGame(true); toast("Sound "+(G.settings.sound?"On":"Off")); }
+    else if(i===np+7){ G.settings.run=!G.settings.run; saveGame(true); toast("Run "+(G.settings.run?"On":"Off")); }
+    else if(i===np+8) saveGame(false);
   }); }
 
 /* ===== Quest log / Objectives ===== */
@@ -579,6 +588,36 @@ function renderQuests(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
     var mark=it.d?"[x]":(active?"->":"[ ]"); ctx.fillText(mark, 22, y);
     ctx.fillStyle=it.d?"#dfffe0":"#fff"; ctx.font="13px Trebuchet MS"; ctx.fillText(it.t, 54, y); }
   ctx.fillStyle="#ffcc33"; ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.fillText("Z / A or X / B to close", W/2, H-12); ctx.textAlign="left"; }
+
+/* ===== Achievements ===== */
+function computeAchievements(){
+  var f=G.flags||{}, b=G.badges||{}, cc=caughtCount(), total=DEX_ORDER.length;
+  return [
+    {n:"First Friend", d:!!f.gotStarter, x:"Choose your first Buddy"},
+    {n:"Rival No More", d:rivalDone(), x:"Defeat your rival, Kade"},
+    {n:"Meadow Master", d:!!b.meadow, x:"Earn the Meadow Badge"},
+    {n:"Tide Tamer", d:!!b.tide, x:"Earn the Tide Badge"},
+    {n:"Spark Specialist", d:!!b.spark, x:"Earn the Spark Badge"},
+    {n:"League Champion", d:!!f.champion, x:"Win the Buddy League"},
+    {n:"Collector", d:cc>=15, x:"Catch 15 Buddymon ("+cc+"/15)"},
+    {n:"Gotta Catch Em All", d:cc>=total, x:"Catch all "+total+" ("+cc+"/"+total+")"},
+    {n:"Legend Hunter", d:!!G.caught.luminox, x:"Catch the legendary Luminox"},
+    {n:"Master Angler", d:!!G.keyItems.rod, x:"Get the Old Rod"},
+    {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"}
+  ];
+}
+function openAchievements(){ G.mode="achievements"; }
+function achievementsInput(k){ if(k==="back"||k==="action"){ sfx("select"); G.mode="world"; } }
+function renderAchievements(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
+  var a=computeAchievements(), done=a.filter(function(x){return x.d;}).length;
+  ctx.fillStyle="#ffcc33"; ctx.font="20px Trebuchet MS"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("ACHIEVEMENTS", 18, 22);
+  ctx.textAlign="right"; ctx.fillStyle="#cfe0ff"; ctx.font="14px Trebuchet MS"; ctx.fillText(done+" / "+a.length, W-18, 22); ctx.textAlign="left";
+  for(var i=0;i<a.length;i++){ var it=a[i], y=46+i*26;
+    ctx.fillStyle=it.d?"#1c3a1f":"#1a1c2e"; rr(14,y-11,W-28,23);
+    ctx.fillStyle=it.d?"#ffd54f":"#4a4f70"; ctx.font="14px Trebuchet MS"; ctx.textBaseline="middle"; ctx.fillText(it.d?"\u2605":"\u2606", 22, y);
+    ctx.fillStyle=it.d?"#fff":"#8a90b0"; ctx.font="13px Trebuchet MS"; ctx.fillText(it.n, 44, y-3);
+    ctx.fillStyle=it.d?"#9fd0a0":"#5a6080"; ctx.font="10px Trebuchet MS"; ctx.fillText(it.x, 44, y+8); }
+  ctx.fillStyle="#ffcc33"; ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.fillText("Z / A or X / B to close", W/2, H-10); ctx.textAlign="left"; }
 
 /* ===== Toast ===== */
 var toastEl=document.getElementById("toast"), toastT=0;
@@ -649,8 +688,9 @@ function queueMsgs(arr,after){ var B=G.battle; B.msgs=arr; B.mi=0; B._shownMi=-1
 function startBattle(wild,isWild){ var idx=firstAble(); if(idx<0) return;
   G.battle={ wild:wild,isWild:isWild,trainer:null,me:idx,phase:"msg",sel:0,forced:false,msgs:[],mi:0,after:null,anim:null,_shownMi:-1 }; G.mode="battle";
   queueMsgs(["A wild "+wild.name+" (L"+wild.level+") appeared!"], function(){ G.battle.phase="menu"; G.battle.sel=0; }); }
-function startTrainer(npc){ var idx=firstAble(); if(idx<0){ toast("Your team cannot battle!"); return; }
-  var team=npc.team.map(function(t){ return makeMon(t[0],t[1]); });
+function startTrainer(npc, lvlBonus){ var idx=firstAble(); if(idx<0){ toast("Your team cannot battle!"); return; }
+  var bonus=lvlBonus||0;
+  var team=npc.team.map(function(t){ return makeMon(t[0],t[1]+bonus); });
   G.battle={ trainer:npc,isWild:false,enemyTeam:team,enemyIdx:0,wild:team[0],me:idx,phase:"msg",sel:0,forced:false,msgs:[],mi:0,after:null,anim:null,_shownMi:-1 }; G.mode="battle";
   queueMsgs([npc.name+" wants to battle!","Go, "+dname(G.party[idx])+"!"], function(){ G.battle.phase="menu"; G.battle.sel=0; }); }
 function afterTurn(){ var B=G.battle, me=G.party[B.me];
@@ -794,7 +834,7 @@ function continueGame(){ if(hasSave()&&loadGame()){ enterWorld(); toast("Welcome
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
+function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 /* ===== PWA: register service worker for offline install ===== */
