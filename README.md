@@ -41,6 +41,25 @@ npx cap sync ios
 
 Then open `ios/App/App.xcworkspace` in Xcode. A GitHub Actions workflow (`.github/workflows/ios.yml`) performs an unsigned simulator build to verify the wrap compiles. Producing a real signed `.ipa` for a device requires macOS, Xcode, and an Apple Developer account.
 
+## Testing on device
+
+Rendering-smoothness bugs (like the iPad ProMotion walking judder fixed in
+v0.20/v0.21) can't be caught by any Node/browser-stub test -- only a real
+device confirms them. See
+[`docs/DEVICE_TEST_CHECKLIST.md`](docs/DEVICE_TEST_CHECKLIST.md) for what
+to check and how to report back if something still looks off.
+
+## Linting
+
+```
+npm install
+npm run lint
+```
+
+Extracts the embedded game script from `index.html` into `.lint/game.js`
+and runs ESLint against it (plus `scripts/*.js`). Runs automatically in CI
+on any push touching `index.html`, `sw.js`, or `scripts/`.
+
 ## Project layout
 
 ```

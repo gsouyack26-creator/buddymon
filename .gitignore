@@ -6,3 +6,5 @@ android/
 *.app
 DerivedData/
 .DS_Store
+.lint/
+bun.lock

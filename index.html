@@ -27,6 +27,11 @@
   #stage{ position:relative; }
   canvas{ image-rendering:auto; background:#5aa84b; border:4px solid #11132a;
     border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; display:block; }
+  /* #ui is non-interactive by default (it sits on top of the canvas at
+     design-space size and gets scaled to match). Any new tappable element
+     added inside #ui MUST opt back in via pointer-events:auto (like .btn
+     and .pk below) or it will silently eat no taps -- and touches will
+     fall through to nothing, not to the canvas underneath. */
   #ui{ position:absolute; left:0; top:0; width:480px; height:352px; transform-origin:0 0; pointer-events:none; }
   #ui .btn, #ui .pk{ pointer-events:auto; }
   .overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
@@ -116,7 +121,11 @@ function resize(){
   if(cv.width!==bw) cv.width=bw;
   if(cv.height!==bh) cv.height=bh;
   ctx.setTransform(bw/W,0,0,bh/H,0,0); ctx.imageSmoothingEnabled=false;
-  ui.style.transform="scale("+k+")";
+  /* Scale #ui by the *rounded* cssW/cssH ratio (not raw k) so the overlay
+     layer lines up exactly with the canvas's actual rendered pixel size --
+     otherwise sub-pixel rounding between the two independently-scaled
+     layers can leave a hairline gap along the right/bottom edge. */
+  ui.style.transform="scale("+(cssW/W)+","+(cssH/H)+")";
 }
 resize();
 window.addEventListener("resize", resize);
