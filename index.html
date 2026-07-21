@@ -229,6 +229,7 @@ var MAPS={
       {tx:5,ty:25,dir:"down",body:"#ba68c8",hair:"#4a148c",name:"Postmaster Beryl",role:"daily"},
       {tx:33,ty:3,dir:"down",body:"#f48fb1",hair:"#ffffff",name:"Nurse Willow",role:"heal"},
       {tx:13,ty:11,dir:"down",body:"#ffab91",hair:"#3e2723",name:"Kid Mika",role:"talk",lines:["Nurse Willow heals your whole team for free!","Look for the little hospital with the red cross, up north!"]},
+      {tx:31,ty:4,dir:"up",body:"#fff59d",hair:"#5d4037",name:"Waiting Kid",role:"talk",lines:["My Buddy stubbed a toe on a rock, so we are waiting our turn.","Nurse Willow is so gentle, it does not even hurt!"]},
       {tx:20,ty:15,dir:"down",body:"#90caf9",hair:"#5d4037",name:RIVAL_NAME,role:"trainer",rival:true,team:[["nibbit",8],["cindermouse",9]],reward:4,
         pre:["Hey JJ! Bet my Buddies are tougher than yours.","Let us settle this right now!"],
         win:["Aw man, you actually beat me!","Fine, take these Buddy Orbs. I will train harder!","The Meadow Gym is south-east. Go earn that badge!"]},
@@ -324,6 +325,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
+var GAME_VERSION="0.22.2";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -464,7 +466,7 @@ function coachRelearn(){
     openChoice(mopts, function(j){ if(j<0||j>=avail.length) return; var key=avail[j][0]; var ms=[]; learnMove(m,key,ms); saveGame(true); toast(dname(m)+" relearned "+MOVES[key].name+"!"); }); }); }
 function talkNPC(n){
   if(n.role==="prof"){ if(!G.flags.gotStarter) return starterFlow(n); return openDialog(n.name,"Take good care of your Buddies, JJ. Adventure awaits!",null); }
-  if(n.role==="heal") return openDialog(n.name,"Welcome to Jayhaven Hospital! Let me tend to your team...",function(){ healParty(); sfx("catch"); toast("Your team is fully healed!"); });
+  if(n.role==="heal") return openDialog(n.name,"Welcome to Jayhaven Hospital! Let me tend to your team...",function(){ healParty(); G.flags.hospitalVisit=true; sfx("catch"); toast("Your team is fully healed!"); });
   if(n.role==="talk") return openDialog(n.name, n.lines||["Hello, JJ!"], null);
   if(n.role==="gate") return openDialog(n.name, n.locked, null);
   if(n.role==="leagueGate"){ if(G.badges.meadow && G.badges.tide && G.badges.spark) return openDialog(n.name, n.open, function(){ doWarp(n.to); }); return openDialog(n.name, n.locked, null); }
@@ -697,7 +699,8 @@ function computeAchievements(){
     {n:"Gotta Catch Em All", d:cc>=total, x:"Catch all "+total+" ("+cc+"/"+total+")"},
     {n:"Legend Hunter", d:!!G.caught.luminox, x:"Catch the legendary Luminox"},
     {n:"Master Angler", d:!!G.keyItems.rod, x:"Get the Old Rod"},
-    {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"}
+    {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
+    {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"}
   ];
 }
 function openAchievements(){ G.mode="achievements"; }
@@ -888,7 +891,8 @@ function renderTitle(){ var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(
     ctx.fillStyle="rgba(255,204,51,0.9)"; rr(-tw/2,-11,tw,22);
     ctx.strokeStyle="#8a5c00"; ctx.lineWidth=2; ctx.strokeRect(-tw/2,-11,tw,22);
     ctx.fillStyle="#4a2c00"; ctx.font="bold 14px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.fillText("\u2605  CHAMPION  \u2605",0,0); ctx.textAlign="left"; ctx.restore(); } }
+    ctx.fillText("\u2605  CHAMPION  \u2605",0,0); ctx.textAlign="left"; ctx.restore(); }
+  ctx.fillStyle="rgba(20,24,50,.38)"; ctx.font="10px Trebuchet MS"; ctx.textAlign="left"; ctx.textBaseline="alphabetic"; ctx.fillText("v"+GAME_VERSION,6,H-6); ctx.textAlign="left"; }
 function renderBattle(){ var B=G.battle; if(!B){ renderWorld(); return; } var me=G.party[B.me], wild=B.wild; ctx.save(); var _sk=FX.shake>0?(Math.random()-0.5)*FX.shake:0; ctx.translate(_sk,_sk*0.6);
   var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#8fd0ff"); g.addColorStop(1,"#cfeeff"); ctx.fillStyle=g; rr(0,0,W,H);
   ctx.fillStyle="#a6e07a"; rr(0,H*0.58,W,H*0.42);
