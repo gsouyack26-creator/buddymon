@@ -267,7 +267,8 @@ var MAPS={
       {tx:2,ty:12,dir:"right",body:"#a1887f",hair:"#3e2723",name:"Hiker Cliff",role:"trainer",team:[["nibbit",8],["sparkpup",9]],reward:4,pre:["Caves make you strong! Show me your team!"],win:["You have grit, kid!"]},
       {tx:17,ty:12,dir:"left",body:"#ffd54f",hair:"#5d4037",name:"Lost Bag",role:"item",item:"orbs",amt:5,lines:["You found a bag with 5 Buddy Orbs inside!"]},
       {tx:16,ty:13,dir:"down",body:"#ffd700",hair:"#6a1b9a",name:"Radiant Shrine",role:"legendary",species:"luminox",level:32,lines:["The Radiant Shrine blazes with light...","Only a Champion may awaken what sleeps within.","LUMINOX awakens!"]},
-      {tx:4,ty:2,dir:"down",body:"#a1887f",hair:"#3e2723",name:"Cave Explorer",role:"talk",lines:["I hear whispers when it gets quiet enough down here...","Probably just the wind. Probably."]}
+      {tx:4,ty:2,dir:"down",body:"#a1887f",hair:"#3e2723",name:"Cave Explorer",role:"talk",lines:["I hear whispers when it gets quiet enough down here...","Probably just the wind. Probably."]},
+      {tx:10,ty:13,dir:"down",body:"#fff9c4",hair:"#795548",name:"Nervous Miner",role:"talk",lines:["That shrine glows brighter some nights than others...","I do not go near it without a Champion nearby!"]}
     ]
   }
 };
@@ -333,7 +334,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.13";
+var GAME_VERSION="0.22.14";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
