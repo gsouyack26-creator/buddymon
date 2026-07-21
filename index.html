@@ -25,7 +25,7 @@
     env(safe-area-inset-bottom,0) env(safe-area-inset-left,0); }
   #wrap{ height:100%; display:flex; align-items:center; justify-content:center; }
   #stage{ position:relative; }
-  canvas{ image-rendering:auto; background:#5aa84b; border:4px solid #11132a;
+  canvas{ image-rendering:-webkit-optimize-contrast; image-rendering:pixelated; background:#5aa84b; border:4px solid #11132a;
     border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; display:block; }
   /* #ui is non-interactive by default (it sits on top of the canvas at
      design-space size and gets scaled to match). Any new tappable element
@@ -339,7 +339,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.30";
+var GAME_VERSION="0.22.31";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
