@@ -847,13 +847,21 @@ function updateParts(){ for(var i=PARTS.length-1;i>=0;i--){ var p=PARTS[i]; p.x+
 function spawnDust(wx,wy){ for(var i=0;i<3;i++) PARTS.push({x:wx,y:wy,vx:(Math.random()-0.5)*1.2,vy:-Math.random()*0.8,life:10+Math.random()*6,c:"#cdb089"}); }
 function drawCloud(cx,cy,r){ ctx.fillStyle="rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(cx,cy,r,r*0.62,0,0,7); ctx.fill(); ctx.beginPath(); ctx.ellipse(cx+r*0.8,cy+3,r*0.7,r*0.5,0,0,7); ctx.fill(); ctx.beginPath(); ctx.ellipse(cx-r*0.8,cy+4,r*0.6,r*0.45,0,0,7); ctx.fill(); }
 function saveSummary(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return null; var team=(d.party||[]).length; var b=d.badges?Object.keys(d.badges).filter(function(k){ return d.badges[k]; }).length:0; var nm=(d.player&&d.player.name)?d.player.name:"JJ"; return nm+"  -  "+team+" Buddies  -  "+b+" badge"+(b===1?"":"s"); }catch(e){ return null; } }
+function saveIsChampion(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); return !!(d&&d.flags&&d.flags.champion); }catch(e){ return false; } }
 function renderTitle(){ var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#7fc4ff"); g.addColorStop(0.6,"#bfe6ff"); g.addColorStop(1,"#d9f0d0"); ctx.fillStyle=g; rr(0,0,W,H);
   ctx.fillStyle="rgba(255,241,180,.85)"; ctx.beginPath(); ctx.arc(W-64,58,32,0,7); ctx.fill();
   for(var c=0;c<4;c++){ var cx=((TICK*0.3+c*150)%(W+140))-70, cy=38+(c*29)%74; drawCloud(cx,cy,17+c*3); }
   ctx.fillStyle="#5aa84b"; rr(0,H*0.72,W,H*0.28); ctx.fillStyle="#4c9a3f"; for(var x=0;x<W;x+=14){ var hh=6+((x*7)%5); rr(x,H*0.72-hh,3,hh); }
   var trio=["sprucub","emberkit","dribblet"]; for(var i=0;i<3;i++){ var sp=SPECIES[trio[i]], bx=W*0.27+i*W*0.23, by=H*0.82+Math.sin(TICK*0.06+i*1.5)*6; drawCreature(bx,by,46,sp,i%2===0); }
   for(var s=0;s<7;s++){ var a=TICK*0.02+s*0.9, sx2=W*0.5+Math.cos(a)*150, sy2=H*0.38+Math.sin(a*1.3)*66; ctx.fillStyle="rgba(255,255,255,"+(0.35+0.35*Math.sin(TICK*0.1+s))+")"; rr(sx2,sy2,2,2); }
-  var ss=saveSummary(); if(ss){ ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle"; var w2=ctx.measureText("Continue: "+ss).width+20; ctx.fillStyle="rgba(16,18,40,.55)"; rr(W/2-w2/2,H-27,w2,19); ctx.fillStyle="#dfffe0"; ctx.fillText("Continue: "+ss,W/2,H-17); ctx.textAlign="left"; } }
+  var ss=saveSummary(); if(ss){ ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle"; var w2=ctx.measureText("Continue: "+ss).width+20; ctx.fillStyle="rgba(16,18,40,.55)"; rr(W/2-w2/2,H-27,w2,19); ctx.fillStyle="#dfffe0"; ctx.fillText("Continue: "+ss,W/2,H-17); ctx.textAlign="left"; }
+  if(saveIsChampion()){
+    var cy=14, cx=W/2, tw=110, pulse=1+Math.sin(TICK*0.08)*0.08;
+    ctx.save(); ctx.translate(cx,cy); ctx.scale(pulse,pulse);
+    ctx.fillStyle="rgba(255,204,51,0.9)"; rr(-tw/2,-11,tw,22);
+    ctx.strokeStyle="#8a5c00"; ctx.lineWidth=2; ctx.strokeRect(-tw/2,-11,tw,22);
+    ctx.fillStyle="#4a2c00"; ctx.font="bold 14px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText("\u2605  CHAMPION  \u2605",0,0); ctx.textAlign="left"; ctx.restore(); } }
 function renderBattle(){ var B=G.battle; if(!B){ renderWorld(); return; } var me=G.party[B.me], wild=B.wild; ctx.save(); var _sk=FX.shake>0?(Math.random()-0.5)*FX.shake:0; ctx.translate(_sk,_sk*0.6);
   var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#8fd0ff"); g.addColorStop(1,"#cfeeff"); ctx.fillStyle=g; rr(0,0,W,H);
   ctx.fillStyle="#a6e07a"; rr(0,H*0.58,W,H*0.42);
