@@ -1,5 +1,5 @@
 /* Buddymon service worker — offline PWA cache */
-var V = "bmon-v0.22.27";
+var V = "bmon-v0.22.28";
 var ASSETS = [
   "./",
   "./index.html",
