@@ -204,6 +204,7 @@ var MAPS={
       {tx:26,ty:11,dir:"down",body:"#1976d2",hair:"#263238",name:"Sailor Pip",role:"ferry",to:{map:"beach",x:11,y:13},ride:["Want to sail to Sunset Beach?","Anchors away!"]},
       {tx:17,ty:9,dir:"down",body:"#e0e0e0",hair:"#8d6e63",name:"Prof. Cedar",role:"prof"},
       {tx:11,ty:3,dir:"down",body:"#f06292",hair:"#4a148c",name:"Buddy Coach Rae",role:"coach"},
+      {tx:5,ty:25,dir:"down",body:"#ba68c8",hair:"#4a148c",name:"Postmaster Beryl",role:"daily"},
       {tx:25,ty:9,dir:"down",body:"#f48fb1",hair:"#ffffff",name:"Nurse Willow",role:"heal"},
       {tx:13,ty:11,dir:"down",body:"#ffab91",hair:"#3e2723",name:"Kid Mika",role:"talk",lines:["Nurse Willow heals your whole team for free!","She is standing right up north by the street."]},
       {tx:20,ty:15,dir:"down",body:"#90caf9",hair:"#5d4037",name:RIVAL_NAME,role:"trainer",rival:true,team:[["nibbit",8],["cindermouse",9]],reward:4,
@@ -440,6 +441,10 @@ function talkNPC(n){
     var rodName={old:"Old Rod",good:"Good Rod",super:"Super Rod"}[give];
     return openDialog(n.name,["Take my "+rodName+"!","Better rods catch stronger Buddies."],function(){ G.keyItems.rod=true; G.keyItems.rodTier=Math.max(curTier,tier); sfx("catch"); toast("Got the "+rodName+"!"); saveGame(true); });
   }
+  if(n.role==="daily"){ var today=(new Date()).toISOString().slice(0,10); if(G.flags.lastGift===today) return openDialog(n.name,"Come back tomorrow for your daily gift, "+G.player.name+"!",null); G.flags.lastGift=today;
+    var gifts=[["orbs",5,"5 Buddy Orbs"],["coins",200,"200 coins"],["potion",3,"3 Potions"],["rareCandy",1,"a Rare Candy"],["panacea",2,"2 Panaceas"],["superpotion",2,"2 Super Potions"]];
+    var gpick=gifts[Math.floor(Math.random()*gifts.length)];
+    return openDialog(n.name, ["Todays gift is "+gpick[2]+"!"], function(){ if(gpick[0]==="orbs") G.orbs+=gpick[1]; else if(gpick[0]==="coins") G.coins+=gpick[1]; else G.items[gpick[0]]=(G.items[gpick[0]]||0)+gpick[1]; sfx("catch"); saveGame(true); toast("Received "+gpick[2]+"!"); }); }
   if(n.role==="coach"){
     if(G.party.length===0) return openDialog(n.name,"Come back with a Buddy on your team!",null);
     openDialog(n.name, ["Need a nickname change or move retraining?"], function(){ openChoice(["Rename a Buddy","Relearn a move","Nothing today"], function(i){ if(i===0) coachRename(); else if(i===1) coachRelearn(); }); }); return; }
