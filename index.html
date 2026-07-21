@@ -145,10 +145,12 @@ function typeMult(a,d){ var r=CHART[a]||{}; return r[d]===undefined?1:r[d]; }
 var MOVES={
   tackle:{name:"Tackle",type:"Normal",power:40}, scratch:{name:"Scratch",type:"Normal",power:40},
   bite:{name:"Bite",type:"Normal",power:55}, vine:{name:"Vine Whip",type:"Grass",power:48},
-  leaf:{name:"Leaf Storm",type:"Grass",power:62}, ember:{name:"Ember",type:"Fire",power:48},
-  flare:{name:"Flare Burst",type:"Fire",power:62}, bubble:{name:"Bubble",type:"Water",power:48},
+  leaf:{name:"Leaf Storm",type:"Grass",power:62}, ember:{name:"Ember",type:"Fire",power:48,burn:0.15},
+  flare:{name:"Flare Burst",type:"Fire",power:62,burn:0.25}, bubble:{name:"Bubble",type:"Water",power:48},
   splash:{name:"Splash Jet",type:"Water",power:62}, spark:{name:"Spark",type:"Electric",power:52},
-  buzz:{name:"Bug Bite",type:"Bug",power:50}, gust:{name:"Gust",type:"Bug",power:58}
+  buzz:{name:"Bug Bite",type:"Bug",power:50}, gust:{name:"Gust",type:"Bug",power:58},
+  thunderwave:{name:"Thunder Wave",type:"Electric",power:0,eff:"par",acc:0.9},
+  sleeppowder:{name:"Sleep Powder",type:"Grass",power:0,eff:"slp",acc:0.75}
 };
 
 /* ===== Species (base + evolved). evo:{to,lvl} ===== */
@@ -170,15 +172,15 @@ var SPECIES={
   finwave:    {name:"Finwave",    type:"Water",    base:{hp:66,atk:17,def:15,spd:16},moves:["splash","bubble","bite"],body:"#0288d1",accent:"#01579b",evolved:true,catchRate:30},
   crabalisk:  {name:"Crabalisk",  type:"Water",    base:{hp:72,atk:18,def:22,spd:9}, moves:["splash","scratch","bite"],body:"#e64a19",accent:"#8d2000",evolved:true,catchRate:30},
   gullgeist:  {name:"Gullgeist",  type:"Normal",   base:{hp:60,atk:16,def:13,spd:20},moves:["gust","bite","tackle"],body:"#cfd8dc",accent:"#607d8b",evolved:true,catchRate:35},
-  voltray:    {name:"Voltray",    type:"Electric", base:{hp:62,atk:20,def:14,spd:22},moves:["spark","splash","bite"],body:"#ffb300",accent:"#01579b",evolved:true,catchRate:30},
-  timbermane: {name:"Timbermane", type:"Grass",   base:{hp:70,atk:18,def:17,spd:13},moves:["leaf","vine","bite"], body:"#2e7d32",accent:"#1b5e20",evolved:true,catchRate:20},
+  voltray:    {name:"Voltray",    type:"Electric", base:{hp:62,atk:20,def:14,spd:22},moves:["spark","splash","bite","thunderwave"],body:"#ffb300",accent:"#01579b",evolved:true,catchRate:30},
+  timbermane: {name:"Timbermane", type:"Grass",   base:{hp:70,atk:18,def:17,spd:13},moves:["leaf","vine","bite","sleeppowder"], body:"#2e7d32",accent:"#1b5e20",evolved:true,catchRate:20},
   flarelynx:  {name:"Flarelynx",  type:"Fire",    base:{hp:64,atk:22,def:14,spd:17},moves:["flare","ember","scratch"],body:"#e64a19",accent:"#870000",evolved:true,catchRate:20},
   tidewhirl:  {name:"Tidewhirl",  type:"Water",   base:{hp:74,atk:16,def:19,spd:12},moves:["splash","bubble","tackle"],body:"#1565c0",accent:"#0d3c78",evolved:true,catchRate:20},
   thumparoo:  {name:"Thumparoo",  type:"Normal",  base:{hp:60,atk:16,def:13,spd:19},moves:["bite","scratch","tackle"], body:"#8d6e63",accent:"#4e342e",evolved:true,catchRate:40},
   vesperia:   {name:"Vesperia",   type:"Bug",     base:{hp:58,atk:17,def:15,spd:16},moves:["gust","buzz","bite"],      body:"#9e9d24",accent:"#4e5000",evolved:true,catchRate:40},
-  voltmastiff:{name:"Voltmastiff",type:"Electric",base:{hp:62,atk:19,def:14,spd:21},moves:["spark","bite","scratch"], body:"#fbc02d",accent:"#e65100",evolved:true,catchRate:30},
+  voltmastiff:{name:"Voltmastiff",type:"Electric",base:{hp:62,atk:19,def:14,spd:21},moves:["spark","bite","scratch","thunderwave"], body:"#fbc02d",accent:"#e65100",evolved:true,catchRate:30},
   marisplash: {name:"Marisplash", type:"Water",   base:{hp:68,atk:15,def:18,spd:13},moves:["splash","bubble"],         body:"#0097a7",accent:"#004d54",evolved:true,catchRate:35},
-  bloomstag:  {name:"Bloomstag",  type:"Grass",   base:{hp:66,atk:16,def:16,spd:14},moves:["leaf","vine","tackle"],    body:"#388e3c",accent:"#1b5e20",evolved:true,catchRate:35},
+  bloomstag:  {name:"Bloomstag",  type:"Grass",   base:{hp:66,atk:16,def:16,spd:14},moves:["leaf","vine","tackle","sleeppowder"],    body:"#388e3c",accent:"#1b5e20",evolved:true,catchRate:35},
   emberat:    {name:"Emberat",    type:"Fire",    base:{hp:60,atk:20,def:13,spd:16},moves:["flare","ember"],           body:"#c62828",accent:"#7f0000",evolved:true,catchRate:35}
 };
 var DEX_ORDER=["sprucub","timbermane","emberkit","flarelynx","dribblet","tidewhirl","nibbit","thumparoo","buzzle","vesperia","sparkpup","voltmastiff","puddlet","marisplash","leafling","bloomstag","cindermouse","emberat","finling","finwave","crabbo","crabalisk","gullby","gullgeist","zapfin","voltray","gloomoth"];
@@ -209,6 +211,9 @@ var MAPS={
         pre:["I love bug Buddies! Battle me!"],win:["Whoa, you are strong!"]},
       {tx:10,ty:28,dir:"up",body:"#bcaaa4",hair:"#4e342e",name:"Camper Dell",role:"trainer",team:[["nibbit",6],["puddlet",7]],reward:3,
         pre:["Out here in the grass, only the tough survive!"],win:["You camp harder than me!"]},
+      {tx:18,ty:3,dir:"down",body:"#ffd54f",hair:"#4a148c",name:"League Guard",role:"leagueGate",to:{map:"league",x:9,y:11},
+        locked:["The BUDDY LEAGUE is beyond me.","Return with all THREE badges: Meadow, Tide, and Spark.","Only true Champions may pass!"],
+        open:["All three badges! You are ready.","Step into the League Arena and face the Champion!"]},
       {tx:2,ty:24,dir:"down",body:"#607d8b",hair:"#263238",name:"Guard",role:"gate",badge:"meadow",
         locked:["Whisper Cave is dangerous.","Come back with the Meadow Badge and I will let you pass."],
         open:["You earned the Meadow Badge! Go ahead into the cave.","Watch out for the rare Gloomoth in there!"]}
@@ -226,9 +231,9 @@ var MAPS={
     ]
   },
   cave:{ name:"Whisper Cave", theme:"cave",
-    grid:["oooooooooooooooooooo","o..................o","o..................o","o..,,,,,..o........o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o...........,,,,,..o","o...........,,,,,..o","o......,,,,,,......o","o....o.,,,,,,.o....o","o......,,,,,,......o","o..................o","o..................o","o..................o","oooooooooXoooooooooo"],
+    grid:["oooooooooooooooooooo","o.........X........o","o..................o","o..,,,,,..o........o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o...........,,,,,..o","o...........,,,,,..o","o......,,,,,,......o","o....o.,,,,,,.o....o","o......,,,,,,......o","o..................o","o..................o","o..................o","oooooooooXoooooooooo"],
     wild:{ pool:["sparkpup","cindermouse","puddlet","leafling","gloomoth","nibbit"], min:5, max:9 },
-    warps:{ "9,15":{map:"town",x:2,y:24} },
+    warps:{ "9,15":{map:"town",x:2,y:24}, "10,1":{map:"gym3",x:7,y:9} },
     npcs:[
       {tx:2,ty:12,dir:"right",body:"#a1887f",hair:"#3e2723",name:"Hiker Cliff",role:"trainer",team:[["nibbit",8],["sparkpup",9]],reward:4,pre:["Caves make you strong! Show me your team!"],win:["You have grit, kid!"]},
       {tx:17,ty:12,dir:"left",body:"#ffd54f",hair:"#5d4037",name:"Lost Bag",role:"item",item:"orbs",amt:5,lines:["You found a bag with 5 Buddy Orbs inside!"]}
@@ -251,6 +256,21 @@ MAPS.gym2={ name:"Tide Gym", theme:"gym", wild:null,
     {tx:5,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Wade",role:"trainer",team:[["finling",11]],reward:2,coins:40,pre:["Prove yourself to me first!"],win:["Splashy work!"]},
     {tx:9,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Coral",role:"trainer",team:[["crabbo",11]],reward:2,coins:40,pre:["No badge until you pass me!"],win:["Well done!"]}
   ] };
+MAPS.gym3={ name:"Spark Gym", theme:"gym", wild:null,
+  grid:["LLLLLLLLLLLLLLL","L.............L","L.............L","L.............L","L..L.......L..L","L.............L","L..L.......L..L","L.............L","L.............L","L.............L","LLLLLLLXLLLLLLL"],
+  warps:{ "7,10":{map:"cave",x:10,y:2} },
+  npcs:[
+    {tx:7,ty:2,dir:"down",body:"#fdd835",hair:"#4a148c",name:"Leader Volt",role:"trainer",boss:true,badge:"spark",team:[["sparkpup",14],["zapfin",16],["voltmastiff",18]],reward:8,coins:280,pre:["Deep in the caves, sparks fly!","I am Leader Volt of the Spark Gym!","Beat my Buddies to earn the Spark Badge!"],win:["Zzzt! You are electrifying!","The SPARK BADGE is yours!","With three badges you can enter the Buddy League up north!"]},
+    {tx:5,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Bolt",role:"trainer",team:[["sparkpup",13],["buzzle",13]],reward:3,coins:50,pre:["I zap through gym aides in no time!"],win:["Crackling combat!"]},
+    {tx:9,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Ohm",role:"trainer",team:[["zapfin",14]],reward:3,coins:50,pre:["No badge without shocking me first!"],win:["Nice zap!"]}
+  ] };
+MAPS.league={ name:"Buddy League", theme:"gym", wild:null,
+  grid:["LLLLLLLLLLLLLLLLLLL","L.................L","L.................L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L.................L","LLLLLLLLLXLLLLLLLLL"],
+  warps:{ "9,12":{map:"town",x:18,y:5} },
+  npcs:[
+    {tx:9,ty:3,dir:"down",body:"#90caf9",hair:"#5d4037",name:"Champion Kade",role:"trainer",boss:true,champion:true,team:[["thumparoo",18],["voltmastiff",20],["flarelynx",22]],reward:12,coins:600,pre:["JJ! You made it all the way to the League!","I have been training every day since you beat me.","I am the CHAMPION now. Only one of us leaves this arena on top!","Give it everything!"],win:["...","I lost. Fair and square.","You are the true Champion, JJ!","Every trainer in the region will hear your name!"]},
+    {tx:3,ty:11,dir:"right",body:"#e0e0e0",hair:"#8d6e63",name:"League Attendant",role:"talk",lines:["Welcome to the Buddy League!","Only trainers with all three badges may battle the Champion."]}
+  ] };
 function curMap(){ return MAPS[G.mapId]; }
 function tileAt(x,y){ var g=curMap().grid; if(y<0||y>=g.length) return "T"; var row=g[y]; if(x<0||x>=row.length) return "T"; return row.charAt(x); }
 function mapW(){ return curMap().grid[0].length; }
@@ -269,7 +289,8 @@ function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 /* ===== State ===== */
 var G={ mode:"title", mapId:"town",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
-  party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0}, keyItems:{}, badges:{}, flags:{gotStarter:false}, steps:0, settings:{sound:true,run:false} };
+  follow:{tx:18,ty:10,fromX:18,fromY:10},
+  party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0}, keyItems:{}, badges:{}, flags:{gotStarter:false,visited:{}}, steps:0, settings:{sound:true,run:false} };
 var held={ up:false,down:false,left:false,right:false,run:false };
 var TICK=0, FX={fade:0,shake:0}, PARTS=[], SAVEFLASH=0;
 
@@ -334,6 +355,7 @@ function renderWorld(){
   for(var ty=r0; ty<=r0+VR; ty++) for(var tx=c0; tx<=c0+VC; tx++){ drawTile(tileAt(tx,ty), tx*TS-camPx, ty*TS-camPy, m.theme); }
   for(var i=0;i<m.npcs.length;i++){ var n=m.npcs[i]; if(!npcActive(n)) continue;
     if(n.tx>=c0-1&&n.tx<=c0+VC+1&&n.ty>=r0-1&&n.ty<=r0+VR+1) drawHuman(n.tx*TS-camPx,n.ty*TS-camPy,n.dir,n.body,n.hair,0); }
+  if(G.party.length>0 && G.follow){ var f=G.follow; var fx=(p.moving?(f.fromX+(f.tx-f.fromX)*p.prog):f.tx), fy=(p.moving?(f.fromY+(f.ty-f.fromY)*p.prog):f.ty); drawCreature(fx*TS-camPx+16, fy*TS-camPy+20, 22, G.party[0].sp, p.dir==="right"); }
   var frame=p.moving?(Math.floor(p.prog*4)%2):0;
   drawHuman(rx*TS-camPx, ry*TS-camPy, p.dir, p.color, "#5d4037", frame);
   for(var pi=0;pi<PARTS.length;pi++){ var pp=PARTS[pi]; ctx.globalAlpha=Math.max(0,pp.life/18); ctx.fillStyle=pp.c; rr(pp.x-camPx-1,pp.y-camPy-1,3,3); } ctx.globalAlpha=1;
@@ -353,8 +375,12 @@ function updateWorld(){ var p=G.player; if(!p.moving) p.speed=(G.settings.run||h
 }
 function delta(d){ return d==="up"?[0,-1]:d==="down"?[0,1]:d==="left"?[-1,0]:[1,0]; }
 function stepMove(d){ var p=G.player; p.dir=d; var dd=delta(d), nx=p.tx+dd[0], ny=p.ty+dd[1];
-  if(solid(nx,ny)) return; p.fromX=p.tx; p.fromY=p.ty; p.tx=nx; p.ty=ny; p.moving=true; p.prog=0; }
-function doWarp(w){ sfx("warp"); FX.fade=1; G.mapId=w.map; var p=G.player; p.tx=w.x; p.ty=w.y; p.fromX=w.x; p.fromY=w.y; p.moving=false; p.prog=0; toast("Entering "+MAPS[w.map].name); saveGame(true); }
+  if(solid(nx,ny)) return; p.fromX=p.tx; p.fromY=p.ty; p.tx=nx; p.ty=ny; p.moving=true; p.prog=0;
+  G.follow.fromX=G.follow.tx; G.follow.fromY=G.follow.ty; G.follow.tx=p.fromX; G.follow.ty=p.fromY; }
+function doWarp(w){ sfx("warp"); FX.fade=1; G.mapId=w.map; var p=G.player; p.tx=w.x; p.ty=w.y; p.fromX=w.x; p.fromY=w.y; p.moving=false; p.prog=0;
+  G.follow.tx=w.x; G.follow.ty=w.y; G.follow.fromX=w.x; G.follow.fromY=w.y;
+  if(!G.flags.visited) G.flags.visited={}; G.flags.visited[w.map]=true;
+  toast("Entering "+MAPS[w.map].name); saveGame(true); }
 function onStep(){ G.steps++; if(G.settings.run||held.run) spawnDust(G.player.tx*TS+16,G.player.ty*TS+28); if(G.steps%2===0) sfx("step"); if(isTallGrass(G.player.tx,G.player.ty)) spawnRustle(G.player.tx*TS+16,G.player.ty*TS+24);
   var w=warpAt(G.player.tx,G.player.ty); if(w){ doWarp(w); return; }
   var wc=curMap().wild;
@@ -379,6 +405,7 @@ function talkNPC(n){
   if(n.role==="heal") return openDialog(n.name,"Let me tend to your team...",function(){ healParty(); sfx("catch"); toast("Your team is fully healed!"); });
   if(n.role==="talk") return openDialog(n.name, n.lines||["Hello, JJ!"], null);
   if(n.role==="gate") return openDialog(n.name, n.locked, null);
+  if(n.role==="leagueGate"){ if(G.badges.meadow && G.badges.tide && G.badges.spark) return openDialog(n.name, n.open, function(){ doWarp(n.to); }); return openDialog(n.name, n.locked, null); }
   if(n.role==="item"){ return openDialog(n.name, n.lines, function(){ if(n.item==="orbs"){ G.orbs+=n.amt; } n.taken=true; sfx("catch"); saveGame(true); }); }
   if(n.role==="shop") return openShop(n);
   if(n.role==="pc") return openBox();
@@ -387,7 +414,7 @@ function talkNPC(n){
   if(n.role==="trainer"){ if(n.defeated) return openDialog(n.name, (n.win&&n.win[n.win.length-1])?[n.win[n.win.length-1]]:["Good luck out there!"], null);
     return openDialog(n.name, n.pre||["Let us battle!"], function(){ startTrainer(n); }); }
 }
-function healParty(){ for(var i=0;i<G.party.length;i++) G.party[i].hp=G.party[i].maxhp; saveGame(true); }
+function healParty(){ for(var i=0;i<G.party.length;i++){ var m=G.party[i]; m.hp=m.maxhp; m.status=null; m.slpT=0; } saveGame(true); }
 
 /* ===== Input router ===== */
 function input(k){
@@ -395,6 +422,7 @@ function input(k){
   if(G.mode==="dialog") return dialogInput(k);
   if(G.mode==="choice") return choiceInput(k);
   if(G.mode==="dex") return dexInput(k);
+  if(G.mode==="quests") return questsInput(k);
   if(G.mode==="battle") return battleInput(k);
   if(k==="action") interact(); else if(k==="back") openTeamMenu();
 }
@@ -414,7 +442,7 @@ function bindTouch(){
 
 /* ===== Buddies, leveling, evolution ===== */
 function makeMon(id,level){ var sp=SPECIES[id], b=sp.base, maxhp=b.hp+level*3+6;
-  return { id:id, sp:sp, name:sp.name, nick:null, level:level, maxhp:maxhp, hp:maxhp, atk:b.atk+level, def:b.def+level, spd:b.spd+level, xp:0, moves:sp.moves.slice() }; }
+  return { id:id, sp:sp, name:sp.name, nick:null, level:level, maxhp:maxhp, hp:maxhp, atk:b.atk+level, def:b.def+level, spd:b.spd+level, xp:0, moves:sp.moves.slice(), status:null, slpT:0 }; }
 function dname(m){ return m.nick||m.name; }
 function xpToNext(l){ return 14+l*10; }
 function gainXp(mon, amt, msgs){ mon.xp+=amt; msgs.push(dname(mon)+" gained "+amt+" XP.");
@@ -506,17 +534,51 @@ function openBagField(){ var opts=["Potion x"+G.items.potion,"Super Potion x"+G.
       openChoice(lab2, function(s){ if(s<0||s>=tm.length){ openBagField(); return; } var m=G.party[tm[s]]; if(m.hp<=0){ toast("Use a Revive first."); openBagField(); return; } if(m.hp>=m.maxhp){ toast("Already full HP."); openBagField(); return; } m.hp=Math.min(m.maxhp,m.hp+heal); G.items[k]--; sfx("catch"); saveGame(true); toast(dname(m)+" healed!"); }); } }); }
 function openTeamMenu(){ var np=G.party.length;
   var opts=G.party.map(function(m){ return dname(m)+" L"+m.level+"  "+m.hp+"/"+m.maxhp; });
-  opts.push("Bag"); opts.push("Buddy Box"); opts.push("Buddydex"); opts.push("Coins: "+G.coins); opts.push("Sound: "+(G.settings.sound?"On":"Off")); opts.push("Run: "+(G.settings.run?"On":"Off")); opts.push("Save Game"); opts.push("Close");
+  opts.push("Bag"); opts.push("Buddy Box"); opts.push("Buddydex"); opts.push("Objectives"); opts.push("Coins: "+G.coins); opts.push("Sound: "+(G.settings.sound?"On":"Off")); opts.push("Run: "+(G.settings.run?"On":"Off")); opts.push("Save Game"); opts.push("Close");
   openChoice(opts, function(i){ if(i<0) return;
     if(i<np){ var m=G.party[i]; openDialog(dname(m), [dname(m)+"  -  "+m.sp.type+" type  L"+m.level, "HP "+m.hp+"/"+m.maxhp+"   ATK "+m.atk+"   DEF "+m.def+"   SPD "+m.spd], null); }
     else if(i===np) openBagField();
     else if(i===np+1) openBox();
     else if(i===np+2) openDex();
-    else if(i===np+3){ }
-    else if(i===np+4){ G.settings.sound=!G.settings.sound; soundOn=G.settings.sound; sfx("select"); saveGame(true); toast("Sound "+(G.settings.sound?"On":"Off")); }
-    else if(i===np+5){ G.settings.run=!G.settings.run; saveGame(true); toast("Run "+(G.settings.run?"On":"Off")); }
-    else if(i===np+6) saveGame(false);
+    else if(i===np+3) openQuests();
+    else if(i===np+4){ }
+    else if(i===np+5){ G.settings.sound=!G.settings.sound; soundOn=G.settings.sound; sfx("select"); saveGame(true); toast("Sound "+(G.settings.sound?"On":"Off")); }
+    else if(i===np+6){ G.settings.run=!G.settings.run; saveGame(true); toast("Run "+(G.settings.run?"On":"Off")); }
+    else if(i===np+7) saveGame(false);
   }); }
+
+/* ===== Quest log / Objectives ===== */
+function rivalDone(){ var t=MAPS.town.npcs; for(var i=0;i<t.length;i++) if(t[i].rival) return !!t[i].defeated; return false; }
+function caughtCount(){ var n=0; for(var k in G.caught) if(G.caught[k]) n++; return n; }
+function computeQuests(){
+  var v=(G.flags&&G.flags.visited)||{}, b=G.badges||{}, f=G.flags||{};
+  var list=[
+    {t:"Meet Prof. Cedar and choose your first Buddy", d:!!f.gotStarter},
+    {t:"Defeat your rival, Kade", d:rivalDone()},
+    {t:"Earn the Meadow Badge (Leader Fern)", d:!!b.meadow},
+    {t:"Sail to Sunset Beach with Sailor Pip", d:!!v.beach},
+    {t:"Earn the Tide Badge (Leader Marina)", d:!!b.tide},
+    {t:"Explore Whisper Cave", d:!!v.cave},
+    {t:"Earn the Spark Badge (Leader Volt)", d:!!b.spark},
+    {t:"Enter the Buddy League", d:!!v.league},
+    {t:"Defeat the Champion and win the League", d:!!f.champion},
+    {t:"Catch 15 different Buddymon (" +caughtCount()+ "/15)", d:caughtCount()>=15}
+  ];
+  var firstOpen=-1; for(var i=0;i<list.length;i++){ if(!list[i].d){ firstOpen=i; break; } }
+  return {list:list, next:firstOpen, doneCount:list.filter(function(q){return q.d;}).length};
+}
+function openQuests(){ G.mode="quests"; }
+function questsInput(k){ if(k==="back"||k==="action"){ sfx("select"); G.mode="world"; } }
+function renderQuests(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
+  var q=computeQuests();
+  ctx.fillStyle="#ffcc33"; ctx.font="20px Trebuchet MS"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("OBJECTIVES", 18, 24);
+  ctx.textAlign="right"; ctx.fillStyle="#cfe0ff"; ctx.font="14px Trebuchet MS"; ctx.fillText(q.doneCount+" / "+q.list.length+" complete", W-18, 24); ctx.textAlign="left";
+  for(var i=0;i<q.list.length;i++){ var it=q.list[i], y=54+i*26, active=(i===q.next);
+    ctx.fillStyle=it.d?"#1c3a1f":(active?"#33305a":"#1a1c2e"); rr(14,y-11,W-28,22);
+    ctx.fillStyle=it.d?"#4caf50":(active?"#ffcc33":"#9fb0e0"); ctx.font="12px Trebuchet MS"; ctx.textBaseline="middle";
+    var mark=it.d?"[x]":(active?"->":"[ ]"); ctx.fillText(mark, 22, y);
+    ctx.fillStyle=it.d?"#dfffe0":"#fff"; ctx.font="13px Trebuchet MS"; ctx.fillText(it.t, 54, y); }
+  ctx.fillStyle="#ffcc33"; ctx.font="12px Trebuchet MS"; ctx.textAlign="center"; ctx.fillText("Z / A or X / B to close", W/2, H-12); ctx.textAlign="left"; }
 
 /* ===== Toast ===== */
 var toastEl=document.getElementById("toast"), toastT=0;
@@ -524,8 +586,8 @@ function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("on"); clear
 
 /* ===== Save / load ===== */
 var SAVE_KEY="bmon_save_v2";
-function serMon(m){ return {id:m.id,nick:m.nick,level:m.level,hp:m.hp,maxhp:m.maxhp,atk:m.atk,def:m.def,spd:m.spd,xp:m.xp}; }
-function deMon(o){ var m=makeMon(o.id,o.level); m.nick=o.nick||null; m.hp=o.hp; m.maxhp=o.maxhp; m.atk=o.atk; m.def=o.def; m.spd=o.spd; m.xp=o.xp; if(!m.nick) m.name=SPECIES[o.id].name; return m; }
+function serMon(m){ return {id:m.id,nick:m.nick,level:m.level,hp:m.hp,maxhp:m.maxhp,atk:m.atk,def:m.def,spd:m.spd,xp:m.xp,status:m.status||null,slpT:m.slpT||0}; }
+function deMon(o){ var m=makeMon(o.id,o.level); m.nick=o.nick||null; m.hp=o.hp; m.maxhp=o.maxhp; m.atk=o.atk; m.def=o.def; m.spd=o.spd; m.xp=o.xp; m.status=o.status||null; m.slpT=o.slpT||0; if(!m.nick) m.name=SPECIES[o.id].name; return m; }
 function serNpcs(){ var out={}; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(n){ if(n.defeated||n.taken||n.gone) out[mid+"|"+n.name]={defeated:!!n.defeated,taken:!!n.taken,gone:!!n.gone}; }); } return out; }
 function applyNpcs(states){ if(!states) return; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(n){ var s=states[mid+"|"+n.name]; if(s){ n.defeated=s.defeated; n.taken=s.taken; n.gone=s.gone; } }); } }
 function saveGame(silent){ try{ var d={ mapId:G.mapId,
@@ -536,13 +598,52 @@ function hasSave(){ return !!localStorage.getItem(SAVE_KEY); }
 function loadGame(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!d) return false;
   G.mapId=d.mapId||"town"; G.player.tx=d.player.tx; G.player.ty=d.player.ty; G.player.dir=d.player.dir||"down";
   G.player.name=d.player.name||"JJ"; G.player.color=d.player.color||"#2196f3"; G.player.moving=false; G.player.prog=0; G.player.fromX=G.player.tx; G.player.fromY=G.player.ty;
-  G.party=(d.party||[]).map(deMon); G.box=(d.box||[]).map(deMon); G.caught=d.caught||{}; G.seen=d.seen||{}; G.orbs=(d.orbs!=null)?d.orbs:8; G.coins=(d.coins!=null)?d.coins:60; G.items=d.items||{potion:2,superpotion:0,revive:0}; G.keyItems=d.keyItems||{}; G.badges=d.badges||{}; G.flags=d.flags||{gotStarter:false}; G.steps=d.steps||0; G.settings=d.settings||{sound:true,run:false}; soundOn=G.settings.sound; applyNpcs(d.npcs); return true; }catch(e){ return false; } }
+  G.party=(d.party||[]).map(deMon); G.box=(d.box||[]).map(deMon); G.caught=d.caught||{}; G.seen=d.seen||{}; G.orbs=(d.orbs!=null)?d.orbs:8; G.coins=(d.coins!=null)?d.coins:60; G.items=d.items||{potion:2,superpotion:0,revive:0}; G.keyItems=d.keyItems||{}; G.badges=d.badges||{}; G.flags=d.flags||{gotStarter:false}; if(!G.flags.visited) G.flags.visited={}; G.flags.visited[G.mapId]=true; G.steps=d.steps||0; G.settings=d.settings||{sound:true,run:false}; soundOn=G.settings.sound; applyNpcs(d.npcs);
+  G.follow={tx:G.player.tx,ty:G.player.ty,fromX:G.player.tx,fromY:G.player.ty}; return true; }catch(e){ return false; } }
 
 /* ===== Battle engine ===== */
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 function eMoveOf(m){ return MOVES[m.moves[Math.floor(Math.random()*m.moves.length)]]; }
 function hit(a,d,mv){ var mult=typeMult(mv.type,d.sp.type), stab=(mv.type===a.sp.type)?1.5:1;
-  var dmg=Math.floor((a.atk*mv.power/(d.def+18))*mult*stab*(0.85+Math.random()*0.15))+1; d.hp=Math.max(0,d.hp-dmg); return {dmg:dmg,mult:mult}; }
+  var dmg=Math.floor((a.atk*mv.power/(d.def+18))*mult*stab*(0.85+Math.random()*0.15))+1;
+  if(a.status==="brn") dmg=Math.max(1,Math.floor(dmg*0.5));
+  d.hp=Math.max(0,d.hp-dmg); return {dmg:dmg,mult:mult}; }
+function espd(m){ return m.status==="par"?m.spd*0.5:m.spd; }
+function applyStatus(mon,st,msgs,label){
+  if(mon.status) return;
+  mon.status=st;
+  if(st==="slp"){ mon.slpT=1+Math.floor(Math.random()*3); msgs.push(label+" fell asleep!"); }
+  else if(st==="par") msgs.push(label+" is paralyzed!");
+  else if(st==="brn") msgs.push(label+" was burned!");
+}
+function preAct(atk,label,msgs){
+  if(atk.status==="slp"){ if(atk.slpT>0){ atk.slpT--; msgs.push(label+" is fast asleep..."); return false; }
+    atk.status=null; msgs.push(label+" woke up!"); }
+  if(atk.status==="par" && Math.random()<0.25){ msgs.push(label+" is paralyzed! It cannot move!"); return false; }
+  return true;
+}
+function actMove(atk,def,mv,label,defLabel,msgs){
+  if(!preAct(atk,label,msgs)) return;
+  if(mv.power===0 && mv.eff){
+    msgs.push(label+" used "+mv.name+"!");
+    if(def.status){ msgs.push("But it failed!"); return; }
+    if(Math.random()>(mv.acc||1)){ msgs.push("But it missed!"); return; }
+    applyStatus(def,mv.eff,msgs,defLabel); return;
+  }
+  msgs.push(label+" used "+mv.name+"!");
+  var r=hit(atk,def,mv); addEff(msgs,r);
+  if(mv.burn && def.hp>0 && !def.status && Math.random()<mv.burn) applyStatus(def,"brn",msgs,defLabel);
+  if(def.hp<=0){ msgs.push(defLabel+" fainted!"); def.status=null; def.slpT=0; }
+}
+function endStatus(mon,label,msgs){
+  if(mon.hp<=0) return;
+  if(mon.status==="brn"){
+    var d=Math.max(1,Math.floor(mon.maxhp/8));
+    mon.hp=Math.max(0,mon.hp-d);
+    msgs.push(label+" is hurt by its burn!");
+    if(mon.hp<=0){ msgs.push(label+" fainted!"); mon.status=null; }
+  }
+}
 function addEff(msgs,r){ if(r.mult>1) msgs.push("It is super effective!"); else if(r.mult>0&&r.mult<1) msgs.push("It is not very effective..."); else if(r.mult===0) msgs.push("It had no effect..."); }
 function queueMsgs(arr,after){ var B=G.battle; B.msgs=arr; B.mi=0; B._shownMi=-1; B.phase="msg"; B.after=after; }
 function startBattle(wild,isWild){ var idx=firstAble(); if(idx<0) return;
@@ -556,7 +657,7 @@ function afterTurn(){ var B=G.battle, me=G.party[B.me];
   if(B.wild.hp<=0){ var msgs=[]; gainXp(me, B.wild.level*6+10, msgs); evolveCheck(me, msgs);
     if(B.trainer){ B.enemyIdx++;
       if(B.enemyIdx<B.enemyTeam.length){ B.wild=B.enemyTeam[B.enemyIdx]; msgs.push(B.trainer.name+" sent out "+B.wild.name+"!"); queueMsgs(msgs, function(){ B.phase="menu"; B.sel=0; }); }
-      else { var npc=B.trainer; msgs.push("You defeated "+npc.name+"!"); queueMsgs(msgs, function(){ npc.defeated=true; if(npc.badge) G.badges[npc.badge]=true; if(npc.reward) G.orbs+=npc.reward; G.coins+=(npc.coins!=null?npc.coins:(npc.reward*15+20)); endBattle(); sfx("win"); var extra=[]; if(npc.badge) extra.push("You earned the "+cap(npc.badge)+" Badge!"); openDialog(npc.name, (npc.win||["Well fought!"]).concat(extra), function(){ saveGame(true); }); }); } }
+      else { var npc=B.trainer; msgs.push("You defeated "+npc.name+"!"); queueMsgs(msgs, function(){ npc.defeated=true; if(npc.badge) G.badges[npc.badge]=true; if(npc.reward) G.orbs+=npc.reward; G.coins+=(npc.coins!=null?npc.coins:(npc.reward*15+20)); if(npc.champion) G.flags.champion=true; endBattle(); sfx("win"); var extra=[]; if(npc.badge) extra.push("You earned the "+cap(npc.badge)+" Badge!"); if(npc.champion){ extra.push("*** YOU ARE THE NEW CHAMPION! ***"); extra.push("Your name is now legend in the Buddy League!"); } openDialog(npc.name, (npc.win||["Well fought!"]).concat(extra), function(){ saveGame(true); }); }); } }
     else { queueMsgs(msgs, function(){ sfx("win"); endBattle(); }); } }
   else if(me.hp<=0){ faintSeq(); }
   else { B.phase="menu"; B.sel=0; } }
@@ -564,14 +665,19 @@ function faintSeq(){ var B=G.battle, alive=firstAble();
   if(alive>=0){ queueMsgs(["Choose your next Buddy!"], function(){ B.forced=true; B.phase="team"; B.sel=alive; }); }
   else { queueMsgs(["Every Buddy fainted!"], function(){ endBattle(); whiteout(); }); } }
 function resolveTurn(pMove){ var B=G.battle, me=G.party[B.me], wild=B.wild, eMove=eMoveOf(wild), msgs=[];
-  var order=(me.spd>=wild.spd)?["p","e"]:["e","p"];
-  for(var i=0;i<2;i++){ if(order[i]==="p"&&me.hp>0&&wild.hp>0){ var r=hit(me,wild,pMove); msgs.push(dname(me)+" used "+pMove.name+"!"); addEff(msgs,r); if(wild.hp<=0) msgs.push((B.trainer?"":"Wild ")+wild.name+" fainted!"); }
-    else if(order[i]==="e"&&wild.hp>0&&me.hp>0){ var r2=hit(wild,me,eMove); msgs.push((B.trainer?"":"Wild ")+wild.name+" used "+eMove.name+"!"); addEff(msgs,r2); if(me.hp<=0) msgs.push(dname(me)+" fainted!"); } }
+  var pLabel=dname(me), eLabel=(B.trainer?"":"Wild ")+wild.name;
+  var order=(espd(me)>=espd(wild))?["p","e"]:["e","p"];
+  for(var i=0;i<2;i++){
+    if(order[i]==="p"&&me.hp>0&&wild.hp>0) actMove(me,wild,pMove,pLabel,eLabel,msgs);
+    else if(order[i]==="e"&&wild.hp>0&&me.hp>0) actMove(wild,me,eMove,eLabel,pLabel,msgs);
+  }
+  if(me.hp>0) endStatus(me,pLabel,msgs);
+  if(wild.hp>0) endStatus(wild,eLabel,msgs);
   queueMsgs(msgs, afterTurn); }
 function doSwitch(i,vol){ var B=G.battle; B.me=i; B.forced=false; var msgs=[dname(G.party[i])+", go!"];
-  if(vol&&B.wild.hp>0){ var e=eMoveOf(B.wild), r=hit(B.wild,G.party[i],e); msgs.push((B.trainer?"":"Wild ")+B.wild.name+" used "+e.name+"!"); addEff(msgs,r); if(G.party[i].hp<=0) msgs.push(dname(G.party[i])+" fainted!"); }
+  if(vol&&B.wild.hp>0){ var e=eMoveOf(B.wild), me=G.party[i]; actMove(B.wild,me,e,(B.trainer?"":"Wild ")+B.wild.name,dname(me),msgs); }
   queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } }); }
-function enemyMove(msgs){ var B=G.battle; if(B.wild.hp>0){ var e=eMoveOf(B.wild), me=G.party[B.me], r=hit(B.wild,me,e); msgs.push((B.trainer?"":"Wild ")+B.wild.name+" used "+e.name+"!"); addEff(msgs,r); if(me.hp<=0) msgs.push(dname(me)+" fainted!"); } }
+function enemyMove(msgs){ var B=G.battle; if(B.wild.hp>0){ var e=eMoveOf(B.wild), me=G.party[B.me]; actMove(B.wild,me,e,(B.trainer?"":"Wild ")+B.wild.name,dname(me),msgs); } }
 function useBattleItem(k){ var B=G.battle;
   if(k==="orb"){ if(B.trainer){ queueMsgs(["You cannot catch another trainer Buddy!"], function(){ B.phase="menu"; B.sel=0; }); return; } if(G.orbs<=0){ toast("No Buddy Orbs!"); return; } throwOrb(); return; }
   if(G.items[k]<=0){ toast("You have none!"); return; }
@@ -587,13 +693,13 @@ function throwOrb(){ var B=G.battle;
     var m=["You threw a Buddy Orb...","Gotcha! "+wild.name+" was caught!"];
     queueMsgs(m, function(){ sfx("catch"); endBattle(); offerNickname(mon, function(){ var where=addBuddy(mon); if(where==="box") toast(mon.name+" was sent to your Box."); saveGame(true); }); }); }
   else { var msgs=["You threw a Buddy Orb...", wild.name+" broke free!"];
-    if(wild.hp>0){ var e=eMoveOf(wild), me=G.party[B.me], r=hit(wild,me,e); msgs.push("Wild "+wild.name+" used "+e.name+"!"); addEff(msgs,r); if(me.hp<=0) msgs.push(dname(me)+" fainted!"); }
+    if(wild.hp>0){ var e=eMoveOf(wild), me=G.party[B.me]; actMove(wild,me,e,"Wild "+wild.name,dname(me),msgs); }
     queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } }); } }
 function attemptRun(){ var B=G.battle;
   if(B.trainer){ queueMsgs(["No running from a trainer battle!"], function(){ B.phase="menu"; B.sel=0; }); return; }
   var me=G.party[B.me], chance=Math.max(0.25,Math.min(0.95, 0.5+(me.spd-B.wild.spd)*0.05));
   if(Math.random()<chance){ queueMsgs(["You got away safely!"], endBattle); }
-  else { var msgs=["You could not get away!"]; var e=eMoveOf(B.wild), r=hit(B.wild,me,e); msgs.push("Wild "+B.wild.name+" used "+e.name+"!"); addEff(msgs,r); if(me.hp<=0) msgs.push(dname(me)+" fainted!");
+  else { var msgs=["You could not get away!"]; var e=eMoveOf(B.wild); actMove(B.wild,me,e,"Wild "+B.wild.name,dname(me),msgs);
     queueMsgs(msgs, function(){ if(G.party[B.me].hp<=0) faintSeq(); else { B.phase="menu"; B.sel=0; } }); } }
 function endBattle(){ G.battle=null; G.mode="world"; saveGame(true); }
 function whiteout(){ healParty(); G.mapId="town"; var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.moving=false; p.prog=0; toast("Your team was healed at home."); saveGame(true); }
@@ -609,7 +715,12 @@ function battleInput(k){ var B=G.battle; if(!B) return;
 /* ===== Battle render ===== */
 function btxt(s,x,y,c,sz,al){ ctx.fillStyle=c; ctx.font=(sz||14)+"px Trebuchet MS"; ctx.textAlign=al||"left"; ctx.textBaseline="middle"; ctx.fillText(s,x,y); ctx.textAlign="left"; }
 function hpPanel(x,y,mon,showXp){ var ph=showXp?52:44; ctx.fillStyle="rgba(16,18,40,.9)"; rr(x,y,152,ph); ctx.strokeStyle="#3a4270"; ctx.lineWidth=2; ctx.strokeRect(x+0.5,y+0.5,151,ph-1);
-  btxt(dname(mon)+"  L"+mon.level, x+8,y+13,"#fff",13); ctx.fillStyle="#222"; rr(x+8,y+24,136,8);
+  btxt(dname(mon)+"  L"+mon.level, x+8,y+13,"#fff",13);
+  if(mon.status){ var stCol={brn:"#e53935",par:"#ffb300",slp:"#7986cb"}[mon.status]||"#888";
+    ctx.fillStyle=stCol; rr(x+108,y+3,36,13);
+    ctx.fillStyle="#fff"; ctx.font="10px Trebuchet MS"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText({brn:"BRN",par:"PAR",slp:"SLP"}[mon.status], x+126,y+10); ctx.textAlign="left"; }
+  ctx.fillStyle="#222"; rr(x+8,y+24,136,8);
   if(mon._dhp===undefined) mon._dhp=mon.hp; else { mon._dhp+=(mon.hp-mon._dhp)*0.22; if(Math.abs(mon._dhp-mon.hp)<0.5) mon._dhp=mon.hp; }
   var pct=Math.max(0,mon._dhp/mon.maxhp), col=pct>0.5?"#4caf50":pct>0.25?"#ffb300":"#e53935"; ctx.fillStyle=col; rr(x+8,y+24,136*pct,8);
   btxt(Math.max(0,Math.round(mon._dhp))+"/"+mon.maxhp, x+8,y+38,"#cfe0ff",10);
@@ -672,8 +783,9 @@ function setTitleSel(i){ G.titleSel=i; var b=titleMenu.querySelectorAll(".btn");
 function titleInput(k){ if(k==="up"||k==="down"){ setTitleSel(1-G.titleSel); sfx("select"); } else if(k==="action"){ sfx("select"); if(G.titleSel===0) newGame(); else continueGame(); } }
 function enterWorld(){ titleEl.classList.remove("on"); G.mode="world"; }
 function resetNpcs(){ for(var mid in MAPS) MAPS[mid].npcs.forEach(function(n){ n.defeated=false; n.taken=false; n.gone=false; }); }
-function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.badges={}; G.flags={gotStarter:false}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
+function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
   var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ"; p.color="#2196f3";
+  G.follow={tx:18,ty:10,fromX:18,fromY:10};
   enterWorld(); var nm=askName("JJ"); G.player.name=nm;
   openChoice(["Blue hero","Red hero","Green hero","Purple hero"], function(i){ if(i<0) i=0; G.player.color=HERO_COLORS[i][1];
     openDialog("", ["Welcome to Jayhaven, "+nm+"!","Prof. Cedar is right nearby.","Press Z / A to talk to him and pick your first Buddy!"], null); }); }
@@ -682,7 +794,7 @@ function continueGame(){ if(hasSave()&&loadGame()){ enterWorld(); toast("Welcome
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
+function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 /* ===== PWA: register service worker for offline install ===== */
