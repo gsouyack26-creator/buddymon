@@ -26,7 +26,9 @@
   #wrap{ height:100%; display:flex; align-items:center; justify-content:center; }
   #stage{ position:relative; }
   canvas{ image-rendering:auto; background:#5aa84b; border:4px solid #11132a;
-    border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; }
+    border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; display:block; }
+  #ui{ position:absolute; left:0; top:0; width:480px; height:352px; transform-origin:0 0; pointer-events:none; }
+  #ui .btn, #ui .pk{ pointer-events:auto; }
   .overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
     flex-direction:column; text-align:center; }
   .overlay.on{ display:flex; }
@@ -72,6 +74,7 @@
 <body>
 <div id="wrap"><div id="stage">
   <canvas id="cv" width="480" height="352"></canvas>
+  <div id="ui">
   <div id="title" class="overlay on">
     <h1>BUDDYMON</h1><h2>JJ QUEST</h2>
     <div class="menu" id="titleMenu">
@@ -93,6 +96,7 @@
     <div id="btnA" class="pk" data-k="a">A</div>
     <div id="btnB" class="pk" data-k="b">B</div>
   </div>
+  </div>
 </div></div>
 <script>
 "use strict";
@@ -101,13 +105,20 @@
 var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
 var W=480, H=352, TS=32, VC=Math.floor(W/TS), VR=Math.floor(H/TS);
 var DPR=Math.min(3, Math.max(1, Math.round(window.devicePixelRatio||1)));
-cv.width=W*DPR; cv.height=H*DPR; if(cv.style){ cv.style.width=W+"px"; cv.style.height=H+"px"; }
-ctx.setTransform(DPR,0,0,DPR,0,0); ctx.imageSmoothingEnabled=false;
-var stage=document.getElementById("stage");
+var stage=document.getElementById("stage"), ui=document.getElementById("ui");
 function vpSize(){ var vv=window.visualViewport;
   return vv ? {w:vv.width, h:vv.height} : {w:window.innerWidth, h:window.innerHeight}; }
-function resize(){ var s=vpSize(), k=Math.max(0.5, Math.min(s.w/W, s.h/H));
-  stage.style.transform="scale("+k+")"; }
+function resize(){
+  var s=vpSize(), k=Math.max(0.5, Math.min(s.w/W, s.h/H));
+  var cssW=Math.round(W*k), cssH=Math.round(H*k);
+  cv.style.width=cssW+"px"; cv.style.height=cssH+"px";
+  var bw=Math.max(1, Math.round(cssW*DPR)), bh=Math.max(1, Math.round(cssH*DPR));
+  if(cv.width!==bw) cv.width=bw;
+  if(cv.height!==bh) cv.height=bh;
+  ctx.setTransform(bw/W,0,0,bh/H,0,0); ctx.imageSmoothingEnabled=false;
+  ui.style.transform="scale("+k+")";
+}
+resize();
 window.addEventListener("resize", resize);
 window.addEventListener("orientationchange", function(){ [60,180,320,520,800].forEach(function(t){ setTimeout(resize,t); }); });
 if(window.visualViewport){ window.visualViewport.addEventListener("resize", resize); }
