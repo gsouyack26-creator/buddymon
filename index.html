@@ -330,7 +330,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.3";
+var GAME_VERSION="0.22.4";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -671,7 +671,9 @@ function computeQuests(){
     {t:"Earn the Spark Badge (Leader Volt)", d:!!b.spark},
     {t:"Enter the Buddy League", d:!!v.league},
     {t:"Defeat the Champion and win the League", d:!!f.champion},
-    {t:"Catch 15 different Buddymon (" +caughtCount()+ "/15)", d:caughtCount()>=15}
+    {t:"Catch 15 different Buddymon (" +caughtCount()+ "/15)", d:caughtCount()>=15},
+    {t:"Reach the Rainbow Route", d:!!v.rainbow},
+    {t:"Catch the legendary Luminox", d:!!G.caught.luminox}
   ];
   var firstOpen=-1; for(var i=0;i<list.length;i++){ if(!list[i].d){ firstOpen=i; break; } }
   return {list:list, next:firstOpen, doneCount:list.filter(function(q){return q.d;}).length};
@@ -692,7 +694,7 @@ function renderQuests(){ ctx.fillStyle="#12142a"; rr(0,0,W,H);
 
 /* ===== Achievements ===== */
 function computeAchievements(){
-  var f=G.flags||{}, b=G.badges||{}, cc=caughtCount(), total=DEX_ORDER.length;
+  var f=G.flags||{}, b=G.badges||{}, v=f.visited||{}, cc=caughtCount(), total=DEX_ORDER.length;
   return [
     {n:"First Friend", d:!!f.gotStarter, x:"Choose your first Buddy"},
     {n:"Rival No More", d:rivalDone(), x:"Defeat your rival, Kade"},
@@ -705,7 +707,9 @@ function computeAchievements(){
     {n:"Legend Hunter", d:!!G.caught.luminox, x:"Catch the legendary Luminox"},
     {n:"Master Angler", d:!!G.keyItems.rod, x:"Get the Old Rod"},
     {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
-    {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"}
+    {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"},
+    {n:"Rod Master", d:(G.keyItems.rodTier||0)>=3, x:"Earn the Super Rod from Fisher Abyss"},
+    {n:"World Traveler", d:["town","gym","cave","beach","gym2","gym3","league","rainbow"].every(function(m){return !!v[m];}), x:"Visit every region in the game"}
   ];
 }
 function openAchievements(){ G.mode="achievements"; }
