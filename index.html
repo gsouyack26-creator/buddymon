@@ -272,7 +272,7 @@ var MAPS={
   }
 };
 MAPS.beach={ name:"Sunset Beach", theme:"beach", wild:null,
-  grid:["~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","T.......~.~.~........T","T....................T","T..o.................T","T....................T","T..............RRRR..T","T..............LGLL..T","T....................T","T.....o..............T","T.................o..T","T....................T","TTTTTTTTTTTTTTTTTTTTTT"],
+  grid:["~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","~~~~~~~~~~~~~~~~~~~~~~","T.......~.~.~........T","T..f....f.......f....T","T..o.................T","T....................T","T..............RRRR..T","T..............LGLL..T","T....................T","T.....o..............T","T.................o..T","T..f..........f......T","TTTTTTTTTTTTTTTTTTTTTT"],
   warps:{ "16,10":{map:"gym2",x:7,y:9} },
   npcs:[
     {tx:3,ty:13,dir:"down",body:"#1976d2",hair:"#263238",name:"Sailor Pip",role:"ferry",to:{map:"town",x:25,y:11},ride:["Ready to sail back to Jayhaven?","Off we go!"]},
@@ -333,7 +333,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.11";
+var GAME_VERSION="0.22.12";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
