@@ -339,7 +339,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.28";
+var GAME_VERSION="0.22.29";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -411,16 +411,16 @@ function applyTint(theme){ if(theme!=="grass"&&theme!=="beach") return; var h=(n
 function renderWorld(){
   var m=curMap(), p=G.player, MWp=mapW()*TS, MHp=mapH()*TS;
   var rx=p.fromX+(p.tx-p.fromX)*p.prog, ry=p.fromY+(p.ty-p.fromY)*p.prog;
-  camPx=Math.max(0,Math.min(rx*TS+TS/2-W/2, Math.max(0,MWp-W)));
-  camPy=Math.max(0,Math.min(ry*TS+TS/2-H/2, Math.max(0,MHp-H)));
+  camPx=Math.round(Math.max(0,Math.min(rx*TS+TS/2-W/2, Math.max(0,MWp-W))));
+  camPy=Math.round(Math.max(0,Math.min(ry*TS+TS/2-H/2, Math.max(0,MHp-H))));
   ctx.fillStyle=m.theme==="cave"?"#1c1830":m.theme==="gym"?"#8a6b3a":m.theme==="beach"?"#e6d3a3":"#5aa84b"; rr(0,0,W,H);
   var c0=Math.floor(camPx/TS), r0=Math.floor(camPy/TS);
   for(var ty=r0; ty<=r0+VR; ty++) for(var tx=c0; tx<=c0+VC; tx++){ drawTile(tileAt(tx,ty), tx*TS-camPx, ty*TS-camPy, m.theme); }
   for(var i=0;i<m.npcs.length;i++){ var n=m.npcs[i]; if(!npcActive(n)) continue;
     if(n.tx>=c0-1&&n.tx<=c0+VC+1&&n.ty>=r0-1&&n.ty<=r0+VR+1) drawHuman(n.tx*TS-camPx,n.ty*TS-camPy,n.dir,n.body,n.hair,0); }
-  if(G.party.length>0 && G.follow){ var f=G.follow; var fx=(p.moving?(f.fromX+(f.tx-f.fromX)*p.prog):f.tx), fy=(p.moving?(f.fromY+(f.ty-f.fromY)*p.prog):f.ty); drawCreature(fx*TS-camPx+16, fy*TS-camPy+20, 22, G.party[0].sp, p.dir==="right"); }
+  if(G.party.length>0 && G.follow){ var f=G.follow; var fx=(p.moving?(f.fromX+(f.tx-f.fromX)*p.prog):f.tx), fy=(p.moving?(f.fromY+(f.ty-f.fromY)*p.prog):f.ty); drawCreature(Math.round(fx*TS)-camPx+16, Math.round(fy*TS)-camPy+20, 22, G.party[0].sp, p.dir==="right"); }
   var frame=p.moving?(Math.floor(p.prog*4)%2):0;
-  drawHuman(rx*TS-camPx, ry*TS-camPy, p.dir, p.color, "#5d4037", frame);
+  drawHuman(Math.round(rx*TS)-camPx, Math.round(ry*TS)-camPy, p.dir, p.color, "#5d4037", frame);
   for(var pi=0;pi<PARTS.length;pi++){ var pp=PARTS[pi]; ctx.globalAlpha=Math.max(0,pp.life/18); ctx.fillStyle=pp.c; rr(pp.x-camPx-1,pp.y-camPy-1,3,3); } ctx.globalAlpha=1;
   if(FX.fade>0){ ctx.fillStyle="rgba(6,7,16,"+FX.fade+")"; rr(0,0,W,H); }
   applyTint(m.theme);
@@ -670,6 +670,7 @@ function rivalDone(){ var t=MAPS.town.npcs; for(var i=0;i<t.length;i++) if(t[i].
 function caughtCount(){ var n=0; for(var k in G.caught) if(G.caught[k]) n++; return n; }
 function caughtTypeCount(tp){ var n=0; for(var k in G.caught){ if(G.caught[k] && SPECIES[k] && SPECIES[k].type===tp) n++; } return n; }
 function highestPartyLevel(){ var hi=0; for(var i=0;i<G.party.length;i++){ if(G.party[i].level>hi) hi=G.party[i].level; } return hi; }
+function totalRematches(){ var n=0; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(np){ n+=(np.rematches||0); }); } return n; }
 function computeQuests(){
   var v=(G.flags&&G.flags.visited)||{}, b=G.badges||{}, f=G.flags||{};
   var list=[
@@ -727,6 +728,8 @@ function computeAchievements(){
     {n:"Bug Buddy", d:caughtTypeCount("Bug")>=3, x:"Catch all 3 Bug-type Buddymon ("+caughtTypeCount("Bug")+"/3)"},
     {n:"Everyday Hero", d:caughtTypeCount("Normal")>=3, x:"Catch 3 Normal-type Buddymon ("+caughtTypeCount("Normal")+"/3)"},
     {n:"Level Up", d:highestPartyLevel()>=30, x:"Raise a Buddy to level 30 ("+highestPartyLevel()+"/30)"},
+    {n:"Grinder", d:highestPartyLevel()>=50, x:"Raise a Buddy to level 50 ("+highestPartyLevel()+"/50)"},
+    {n:"Rematch Regular", d:totalRematches()>=5, x:"Battle trainer rematches 5 times ("+Math.min(totalRematches(),5)+"/5)"},
     {n:"Orb Hoarder", d:G.orbs>=20, x:"Hold 20 Buddy Orbs at once"},
     {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
     {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"},
