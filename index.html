@@ -301,7 +301,8 @@ MAPS.gym3={ name:"Spark Gym", theme:"gym", wild:null,
     {tx:7,ty:2,dir:"down",body:"#fdd835",hair:"#4a148c",name:"Leader Volt",role:"trainer",boss:true,badge:"spark",team:[["sparkpup",14],["zapfin",16],["voltmastiff",18]],reward:8,coins:280,pre:["Deep in the caves, sparks fly!","I am Leader Volt of the Spark Gym!","Beat my Buddies to earn the Spark Badge!"],win:["Zzzt! You are electrifying!","The SPARK BADGE is yours!","With three badges you can enter the Buddy League up north!"]},
     {tx:5,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Bolt",role:"trainer",team:[["sparkpup",13],["buzzle",13]],reward:3,coins:50,pre:["I zap through gym aides in no time!"],win:["Crackling combat!"]},
     {tx:9,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Ohm",role:"trainer",team:[["zapfin",14]],reward:3,coins:50,pre:["No badge without shocking me first!"],win:["Nice zap!"]},
-    {tx:3,ty:8,dir:"down",body:"#fff9c4",hair:"#f57f17",name:"Bored Assistant",role:"talk",lines:["The sparks give me the best hair days.","Static electricity is basically my skincare routine now."]}
+    {tx:3,ty:8,dir:"down",body:"#fff9c4",hair:"#f57f17",name:"Bored Assistant",role:"talk",lines:["The sparks give me the best hair days.","Static electricity is basically my skincare routine now."]},
+    {tx:12,ty:1,dir:"down",body:"#ffee58",hair:"#4a148c",name:"Static Cadet",role:"talk",lines:["Leader Volt trained down in the caves for years.","She says the sparks there taught her everything."]}
   ] };
 MAPS.league={ name:"Buddy League", theme:"gym", wild:null,
   grid:["LLLLLLLLLLLLLLLLLLL","L.................L","L.................L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L.................L","LLLLLLLLLXLLLLLLLLL"],
@@ -336,7 +337,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.16";
+var GAME_VERSION="0.22.17";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
