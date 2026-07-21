@@ -338,7 +338,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.24";
+var GAME_VERSION="0.22.25";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -668,6 +668,7 @@ function openTeamMenu(){ var np=G.party.length;
 function rivalDone(){ var t=MAPS.town.npcs; for(var i=0;i<t.length;i++) if(t[i].rival) return !!t[i].defeated; return false; }
 function caughtCount(){ var n=0; for(var k in G.caught) if(G.caught[k]) n++; return n; }
 function caughtTypeCount(tp){ var n=0; for(var k in G.caught){ if(G.caught[k] && SPECIES[k] && SPECIES[k].type===tp) n++; } return n; }
+function highestPartyLevel(){ var hi=0; for(var i=0;i<G.party.length;i++){ if(G.party[i].level>hi) hi=G.party[i].level; } return hi; }
 function computeQuests(){
   var v=(G.flags&&G.flags.visited)||{}, b=G.badges||{}, f=G.flags||{};
   var list=[
@@ -723,6 +724,8 @@ function computeAchievements(){
     {n:"Meadow Friend", d:caughtTypeCount("Grass")>=3, x:"Catch 3 Grass-type Buddymon ("+caughtTypeCount("Grass")+"/3)"},
     {n:"Bug Buddy", d:caughtTypeCount("Bug")>=3, x:"Catch all 3 Bug-type Buddymon ("+caughtTypeCount("Bug")+"/3)"},
     {n:"Everyday Hero", d:caughtTypeCount("Normal")>=3, x:"Catch 3 Normal-type Buddymon ("+caughtTypeCount("Normal")+"/3)"},
+    {n:"Level Up", d:highestPartyLevel()>=30, x:"Raise a Buddy to level 30 ("+highestPartyLevel()+"/30)"},
+    {n:"Orb Hoarder", d:G.orbs>=20, x:"Hold 20 Buddy Orbs at once"},
     {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
     {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"},
     {n:"Rod Master", d:(G.keyItems.rodTier||0)>=3, x:"Earn the Super Rod from Fisher Abyss"},
