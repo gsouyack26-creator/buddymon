@@ -217,7 +217,7 @@ var SIGNS={
 };
 var MAPS={
   town:{ name:"Jayhaven", theme:"grass",
-    grid:["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T...................#..................T","T.....RRR...RRR.....#........RRR.......T","T.....HDH...HDH.....#..,,,,,,,DH.......T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#.....S............T","T.......#.S.........#..................T","T..###################################.T","T...#...............#...............#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#.RRRR..........#...............#..T","T,,,#.LELL..........#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T..###################################.T","T...................#..................T","T...................#.........RRRR.....T","T.C.................#.........LGLL.....T","T.....S.............###############....T","T.....,,,,,,,,,,,,,.#..................T","T.....,,,,,,,,,,,,,.#..................T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],
+    grid:["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T...................#..................T","T.....RRR...RRR.....#........RRRPPP....T","T.....HDH...HDH.....#..,,,,,,,DHNDN....T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#.....S............T","T.......#.S.........#..................T","T..###################################.T","T...#...............#...............#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#.RRRR..........#...............#..T","T,,,#.LELL..........#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T..###################################.T","T...................#..................T","T...................#.........RRRR.....T","T.C.................#.........LGLL.....T","T.....S.............###############....T","T.....,,,,,,,,,,,,,.#..................T","T.....,,,,,,,,,,,,,.#..................T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],
     wild:{ pool:["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup"], night:["nibbit","cindermouse","sparkpup","gloomoth","buzzle","cindermouse"], min:2, max:5 },
     warps:{ "2,25":{map:"cave",x:9,y:14}, "31,25":{map:"gym",x:7,y:9} },
     npcs:[
@@ -227,8 +227,8 @@ var MAPS={
       {tx:17,ty:9,dir:"down",body:"#e0e0e0",hair:"#8d6e63",name:"Prof. Cedar",role:"prof"},
       {tx:11,ty:3,dir:"down",body:"#f06292",hair:"#4a148c",name:"Buddy Coach Rae",role:"coach"},
       {tx:5,ty:25,dir:"down",body:"#ba68c8",hair:"#4a148c",name:"Postmaster Beryl",role:"daily"},
-      {tx:25,ty:9,dir:"down",body:"#f48fb1",hair:"#ffffff",name:"Nurse Willow",role:"heal"},
-      {tx:13,ty:11,dir:"down",body:"#ffab91",hair:"#3e2723",name:"Kid Mika",role:"talk",lines:["Nurse Willow heals your whole team for free!","She is standing right up north by the street."]},
+      {tx:33,ty:3,dir:"down",body:"#f48fb1",hair:"#ffffff",name:"Nurse Willow",role:"heal"},
+      {tx:13,ty:11,dir:"down",body:"#ffab91",hair:"#3e2723",name:"Kid Mika",role:"talk",lines:["Nurse Willow heals your whole team for free!","Look for the little hospital with the red cross, up north!"]},
       {tx:20,ty:15,dir:"down",body:"#90caf9",hair:"#5d4037",name:RIVAL_NAME,role:"trainer",rival:true,team:[["nibbit",8],["cindermouse",9]],reward:4,
         pre:["Hey JJ! Bet my Buddies are tougher than yours.","Let us settle this right now!"],
         win:["Aw man, you actually beat me!","Fine, take these Buddy Orbs. I will train harder!","The Meadow Gym is south-east. Go earn that badge!"]},
@@ -311,7 +311,7 @@ function curMap(){ return MAPS[G.mapId]; }
 function tileAt(x,y){ var g=curMap().grid; if(y<0||y>=g.length) return "T"; var row=g[y]; if(x<0||x>=row.length) return "T"; return row.charAt(x); }
 function mapW(){ return curMap().grid[0].length; }
 function mapH(){ return curMap().grid.length; }
-var SOLID={ "T":1,"~":1,"o":1,"H":1,"R":1,"F":1,"L":1,"S":1 };
+var SOLID={ "T":1,"~":1,"o":1,"H":1,"R":1,"F":1,"L":1,"S":1,"P":1,"N":1 };
 function npcActive(n){ if(n.gone) return false;
   if(n.role==="legendary") return !!(G.flags&&G.flags.champion) && !G.caught[n.species];
   if(n.role==="gate") return !G.badges[n.badge];
@@ -377,6 +377,8 @@ function drawTile(ch,sx,sy,theme){
   else if(ch==="C"){ ctx.fillStyle="#7d8891"; rr(sx,sy,TS,TS); ctx.fillStyle="#12101c"; ctx.beginPath(); ctx.arc(sx+16,sy+20,11,Math.PI,0); ctx.fill(); rr(sx+5,sy+20,22,12); }
   else if(ch==="X"){ ctx.fillStyle=base; rr(sx,sy,TS,TS); ctx.fillStyle="#12101c"; rr(sx+6,sy+4,20,26); ctx.fillStyle="#ffca28"; rr(sx+13,sy+26,6,4); }
   else if(ch==="S"){ ctx.fillStyle="#6b4226"; rr(sx+7,sy+16,3,14); rr(sx+22,sy+16,3,14); ctx.fillStyle="#a5764b"; rr(sx+4,sy+6,24,14); ctx.fillStyle="#3e2723"; rr(sx+7,sy+10,18,2); rr(sx+7,sy+14,14,2); }
+  else if(ch==="P"){ ctx.fillStyle="#f2f5fa"; rr(sx,sy,TS,TS); ctx.fillStyle="rgba(0,0,0,.08)"; rr(sx,sy+TS-4,TS,4); ctx.fillStyle="#e53935"; rr(sx+13,sy+7,6,18); rr(sx+7,sy+13,18,6); }
+  else if(ch==="N"){ ctx.fillStyle="#f6f8fc"; rr(sx,sy,TS,TS); ctx.fillStyle="#cfd8e3"; rr(sx,sy,TS,2); ctx.fillStyle="#8fa6c2"; rr(sx+7,sy+18,18,8); ctx.fillStyle="#f6f8fc"; rr(sx+9,sy+20,14,4); }
 }
 
 /* ===== World render ===== */
@@ -461,7 +463,7 @@ function coachRelearn(){
     openChoice(mopts, function(j){ if(j<0||j>=avail.length) return; var key=avail[j][0]; var ms=[]; learnMove(m,key,ms); saveGame(true); toast(dname(m)+" relearned "+MOVES[key].name+"!"); }); }); }
 function talkNPC(n){
   if(n.role==="prof"){ if(!G.flags.gotStarter) return starterFlow(n); return openDialog(n.name,"Take good care of your Buddies, JJ. Adventure awaits!",null); }
-  if(n.role==="heal") return openDialog(n.name,"Let me tend to your team...",function(){ healParty(); sfx("catch"); toast("Your team is fully healed!"); });
+  if(n.role==="heal") return openDialog(n.name,"Welcome to Jayhaven Hospital! Let me tend to your team...",function(){ healParty(); sfx("catch"); toast("Your team is fully healed!"); });
   if(n.role==="talk") return openDialog(n.name, n.lines||["Hello, JJ!"], null);
   if(n.role==="gate") return openDialog(n.name, n.locked, null);
   if(n.role==="leagueGate"){ if(G.badges.meadow && G.badges.tide && G.badges.spark) return openDialog(n.name, n.open, function(){ doWarp(n.to); }); return openDialog(n.name, n.locked, null); }
