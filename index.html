@@ -256,7 +256,8 @@ var MAPS={
         win:["Incredible! You have a real bond with your Buddies.","The MEADOW BADGE is yours! It opens Whisper Cave.","Take these Buddy Orbs too. You earned them!"]},
       {tx:4,ty:5,dir:"down",body:"#c8e6c9",hair:"#2e7d32",name:"Gym Aide Sol",role:"trainer",team:[["leafling",8]],reward:2,pre:["Leader Fern is amazing! Prove yourself to me first."],win:["Nice moves!"]},
       {tx:10,ty:5,dir:"down",body:"#c8e6c9",hair:"#2e7d32",name:"Gym Aide Fern Jr",role:"trainer",team:[["buzzle",9]],reward:2,pre:["No badge until you get past me!"],win:["Impressive!"]},
-      {tx:12,ty:1,dir:"down",body:"#e6ee9c",hair:"#33691e",name:"Nervous Trainer",role:"talk",lines:["I have been meaning to challenge Leader Fern for weeks...","Maybe next week. Definitely next week."]}
+      {tx:12,ty:1,dir:"down",body:"#e6ee9c",hair:"#33691e",name:"Nervous Trainer",role:"talk",lines:["I have been meaning to challenge Leader Fern for weeks...","Maybe next week. Definitely next week."]},
+      {tx:2,ty:7,dir:"down",body:"#aed581",hair:"#33691e",name:"Gym Groundskeeper",role:"talk",lines:["Leader Fern insists on real grass, not astroturf.","Keeps the Buddies calm before a big match."]}
     ]
   },
   cave:{ name:"Whisper Cave", theme:"cave",
@@ -334,7 +335,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.14";
+var GAME_VERSION="0.22.15";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
