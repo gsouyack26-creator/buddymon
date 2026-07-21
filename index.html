@@ -155,6 +155,7 @@ function sfx(kind){
   else if(kind==="evolve"){ beep(400,0.1); setTimeout(function(){beep(600,0.1);},120); setTimeout(function(){beep(900,0.2);},260); }
   else if(kind==="warp") beep(300,0.14,"sine",0.06);
   else if(kind==="step") beep(160,0.025,"sine",0.015);
+  else if(kind==="achievement"){ beep(660,0.08,"triangle",0.06); setTimeout(function(){beep(880,0.08,"triangle",0.06);},90); setTimeout(function(){beep(1100,0.16,"triangle",0.07);},180); }
 }
 
 /* ===== Types ===== */
@@ -217,7 +218,7 @@ var SIGNS={
 };
 var MAPS={
   town:{ name:"Jayhaven", theme:"grass",
-    grid:["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T...................#..................T","T.....RRR...RRR.....#........RRRPPP....T","T.....HDH...HDH.....#..,,,,,,,DHNDN....T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#.....S............T","T.......#.S.........#..................T","T..###################################.T","T...#...............#...............#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#.RRRR..........#...............#..T","T,,,#.LELL..........#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T..###################################.T","T...................#..................T","T...................#.........RRRR.....T","T.C.................#.........LGLL.....T","T.....S.............###############....T","T.....,,,,,,,,,,,,,.#..................T","T.....,,,,,,,,,,,,,.#..................T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],
+    grid:["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T..f...f.......f....#....f.........f...T","T.....RRR...RRR.....#........RRRPPP....T","T.....HDH...HDH.....#..,,,,,,,DHNDN....T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#.....S............T","T.......#.S.........#..................T","T..###################################.T","T...#...............#...............#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#.RRRR..........#...............#..T","T,,,#.LELL..........#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T..###################################.T","T....f...........f..#.......f........f.T","T...................#.........RRRR.....T","T.C.................#.........LGLL.....T","T.....S.............###############....T","T.....,,,,,,,,,,,,,.#..................T","T.....,,,,,,,,,,,,,.#..................T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],
     wild:{ pool:["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup"], night:["nibbit","cindermouse","sparkpup","gloomoth","buzzle","cindermouse"], min:2, max:5 },
     warps:{ "2,25":{map:"cave",x:9,y:14}, "31,25":{map:"gym",x:7,y:9} },
     npcs:[
@@ -330,7 +331,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.5";
+var GAME_VERSION="0.22.6";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -732,7 +733,7 @@ var _toastQueue=[], _toastQueueT=0;
 function queueToast(msg){ _toastQueue.push(msg); if(_toastQueue.length===1) _showNextQueuedToast(); }
 function _showNextQueuedToast(){ if(!_toastQueue.length) return; toast(_toastQueue[0]); clearTimeout(_toastQueueT); _toastQueueT=setTimeout(function(){ _toastQueue.shift(); _showNextQueuedToast(); }, 1900); }
 function checkAchievements(){ if(!G.flags) return; if(!G.flags.achSeen) G.flags.achSeen={};
-  var a=computeAchievements(); for(var i=0;i<a.length;i++){ var it=a[i]; if(it.d && !G.flags.achSeen[it.n]){ G.flags.achSeen[it.n]=true; queueToast("\u2605 Achievement: "+it.n+"!"); } } }
+  var a=computeAchievements(); for(var i=0;i<a.length;i++){ var it=a[i]; if(it.d && !G.flags.achSeen[it.n]){ G.flags.achSeen[it.n]=true; sfx("achievement"); queueToast("\u2605 Achievement: "+it.n+"!"); } } }
 
 /* ===== Save / load ===== */
 var SAVE_KEY="bmon_save_v2";

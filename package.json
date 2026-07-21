@@ -1,6 +1,6 @@
 {
   "name": "buddymon",
-  "version": "0.22.5",
+  "version": "0.22.6",
   "private": true,
   "description": "Buddymon: JJ Quest - a Pokemon-style adventure game",
   "scripts": {
