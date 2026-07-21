@@ -253,7 +253,8 @@ var MAPS={
         pre:["Welcome to Meadow Gym, JJ!","I am Leader Fern. Beat my Buddies to earn the Meadow Badge!"],
         win:["Incredible! You have a real bond with your Buddies.","The MEADOW BADGE is yours! It opens Whisper Cave.","Take these Buddy Orbs too. You earned them!"]},
       {tx:4,ty:5,dir:"down",body:"#c8e6c9",hair:"#2e7d32",name:"Gym Aide Sol",role:"trainer",team:[["leafling",8]],reward:2,pre:["Leader Fern is amazing! Prove yourself to me first."],win:["Nice moves!"]},
-      {tx:10,ty:5,dir:"down",body:"#c8e6c9",hair:"#2e7d32",name:"Gym Aide Fern Jr",role:"trainer",team:[["buzzle",9]],reward:2,pre:["No badge until you get past me!"],win:["Impressive!"]}
+      {tx:10,ty:5,dir:"down",body:"#c8e6c9",hair:"#2e7d32",name:"Gym Aide Fern Jr",role:"trainer",team:[["buzzle",9]],reward:2,pre:["No badge until you get past me!"],win:["Impressive!"]},
+      {tx:12,ty:1,dir:"down",body:"#e6ee9c",hair:"#33691e",name:"Nervous Trainer",role:"talk",lines:["I have been meaning to challenge Leader Fern for weeks...","Maybe next week. Definitely next week."]}
     ]
   },
   cave:{ name:"Whisper Cave", theme:"cave",
@@ -263,7 +264,8 @@ var MAPS={
     npcs:[
       {tx:2,ty:12,dir:"right",body:"#a1887f",hair:"#3e2723",name:"Hiker Cliff",role:"trainer",team:[["nibbit",8],["sparkpup",9]],reward:4,pre:["Caves make you strong! Show me your team!"],win:["You have grit, kid!"]},
       {tx:17,ty:12,dir:"left",body:"#ffd54f",hair:"#5d4037",name:"Lost Bag",role:"item",item:"orbs",amt:5,lines:["You found a bag with 5 Buddy Orbs inside!"]},
-      {tx:16,ty:13,dir:"down",body:"#ffd700",hair:"#6a1b9a",name:"Radiant Shrine",role:"legendary",species:"luminox",level:32,lines:["The Radiant Shrine blazes with light...","Only a Champion may awaken what sleeps within.","LUMINOX awakens!"]}
+      {tx:16,ty:13,dir:"down",body:"#ffd700",hair:"#6a1b9a",name:"Radiant Shrine",role:"legendary",species:"luminox",level:32,lines:["The Radiant Shrine blazes with light...","Only a Champion may awaken what sleeps within.","LUMINOX awakens!"]},
+      {tx:4,ty:2,dir:"down",body:"#a1887f",hair:"#3e2723",name:"Cave Explorer",role:"talk",lines:["I hear whispers when it gets quiet enough down here...","Probably just the wind. Probably."]}
     ]
   }
 };
@@ -275,7 +277,8 @@ MAPS.beach={ name:"Sunset Beach", theme:"beach", wild:null,
     {tx:5,ty:7,dir:"up",body:"#00897b",hair:"#4e342e",name:"Fisher Kai",role:"fisher",giveRod:"old"},
     {tx:14,ty:11,dir:"up",body:"#26a69a",hair:"#004d40",name:"Fisher Coral",role:"fisher",giveRod:"good",require:"meadow",lines:["I sell the finest Good Rod on the coast."]},
     {tx:19,ty:13,dir:"up",body:"#00695c",hair:"#001d1a",name:"Fisher Abyss",role:"fisher",giveRod:"super",require:"champion",lines:["Only Champions may wield the Super Rod."]},
-    {tx:9,ty:8,dir:"down",body:"#4dd0e1",hair:"#01579b",name:"Swimmer Dax",role:"trainer",team:[["finling",9],["puddlet",10]],reward:3,coins:60,pre:["The waves make me strong! Battle me!"],win:["Glub... you win!"]}
+    {tx:9,ty:8,dir:"down",body:"#4dd0e1",hair:"#01579b",name:"Swimmer Dax",role:"trainer",team:[["finling",9],["puddlet",10]],reward:3,coins:60,pre:["The waves make me strong! Battle me!"],win:["Glub... you win!"]},
+    {tx:17,ty:6,dir:"down",body:"#ffe0b2",hair:"#6d4c41",name:"Beachcomber",role:"talk",lines:["Found seven seashells today. A personal record!","The best ones wash up right after sunset."]}
   ] };
 MAPS.gym2={ name:"Tide Gym", theme:"gym", wild:null,
   grid:["LLLLLLLLLLLLLLL","L.............L","L.............L","L.............L","L..L.......L..L","L.............L","L..L.......L..L","L.............L","L.............L","L.............L","LLLLLLLXLLLLLLL"],
@@ -283,7 +286,8 @@ MAPS.gym2={ name:"Tide Gym", theme:"gym", wild:null,
   npcs:[
     {tx:7,ty:2,dir:"down",body:"#4fc3f7",hair:"#01579b",name:"Leader Marina",role:"trainer",boss:true,badge:"tide",team:[["puddlet",12],["finwave",14]],reward:6,coins:200,pre:["I am Leader Marina of the Tide Gym!","Beat my Buddies to earn the Tide Badge!"],win:["The tides favor you today!","The TIDE BADGE is yours!","Take these coins and Orbs, champion!"]},
     {tx:5,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Wade",role:"trainer",team:[["finling",11]],reward:2,coins:40,pre:["Prove yourself to me first!"],win:["Splashy work!"]},
-    {tx:9,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Coral",role:"trainer",team:[["crabbo",11]],reward:2,coins:40,pre:["No badge until you pass me!"],win:["Well done!"]}
+    {tx:9,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Coral",role:"trainer",team:[["crabbo",11]],reward:2,coins:40,pre:["No badge until you pass me!"],win:["Well done!"]},
+    {tx:12,ty:1,dir:"down",body:"#e1f5fe",hair:"#01579b",name:"Gym Janitor",role:"talk",lines:["Mopping up puddles is a full-time job around here.","Leader Marina says it builds character."]}
   ] };
 MAPS.gym3={ name:"Spark Gym", theme:"gym", wild:null,
   grid:["LLLLLLLLLLLLLLL","L.............L","L.............L","L.............L","L..L.......L..L","L.............L","L..L.......L..L","L.............L","L.............L","L.............L","LLLLLLLXLLLLLLL"],
@@ -291,7 +295,8 @@ MAPS.gym3={ name:"Spark Gym", theme:"gym", wild:null,
   npcs:[
     {tx:7,ty:2,dir:"down",body:"#fdd835",hair:"#4a148c",name:"Leader Volt",role:"trainer",boss:true,badge:"spark",team:[["sparkpup",14],["zapfin",16],["voltmastiff",18]],reward:8,coins:280,pre:["Deep in the caves, sparks fly!","I am Leader Volt of the Spark Gym!","Beat my Buddies to earn the Spark Badge!"],win:["Zzzt! You are electrifying!","The SPARK BADGE is yours!","With three badges you can enter the Buddy League up north!"]},
     {tx:5,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Bolt",role:"trainer",team:[["sparkpup",13],["buzzle",13]],reward:3,coins:50,pre:["I zap through gym aides in no time!"],win:["Crackling combat!"]},
-    {tx:9,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Ohm",role:"trainer",team:[["zapfin",14]],reward:3,coins:50,pre:["No badge without shocking me first!"],win:["Nice zap!"]}
+    {tx:9,ty:5,dir:"down",body:"#fff59d",hair:"#f57f17",name:"Aide Ohm",role:"trainer",team:[["zapfin",14]],reward:3,coins:50,pre:["No badge without shocking me first!"],win:["Nice zap!"]},
+    {tx:3,ty:8,dir:"down",body:"#fff9c4",hair:"#f57f17",name:"Bored Assistant",role:"talk",lines:["The sparks give me the best hair days.","Static electricity is basically my skincare routine now."]}
   ] };
 MAPS.league={ name:"Buddy League", theme:"gym", wild:null,
   grid:["LLLLLLLLLLLLLLLLLLL","L.................L","L.................L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L..L...........L..L","L.................L","L.................L","L.................L","LLLLLLLLLXLLLLLLLLL"],
@@ -325,7 +330,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.2";
+var GAME_VERSION="0.22.3";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
