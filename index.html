@@ -393,9 +393,10 @@ function renderWorld(){
 }
 
 /* ===== Movement, warps, encounters ===== */
-function updateWorld(){ var p=G.player; if(!p.moving) p.speed=(G.settings.run||held.run)?0.28:0.16;
+var FRAME_MS=1000/60;
+function updateWorld(dt){ var p=G.player; var step=(dt||FRAME_MS)/FRAME_MS; if(step>4) step=4; if(!p.moving) p.speed=(G.settings.run||held.run)?0.28:0.16;
   if(!p.moving){ var d=held.up?"up":held.down?"down":held.left?"left":held.right?"right":null; if(d) stepMove(d); }
-  else { p.prog+=p.speed; if(p.prog>=1){ p.prog=0; p.moving=false; onStep(); } }
+  else { p.prog+=p.speed*step; if(p.prog>=1){ p.prog=0; p.moving=false; onStep(); } }
 }
 function delta(d){ return d==="up"?[0,-1]:d==="down"?[0,1]:d==="left"?[-1,0]:[1,0]; }
 function stepMove(d){ var p=G.player; p.dir=d; var dd=delta(d), nx=p.tx+dd[0], ny=p.ty+dd[1];
@@ -486,12 +487,13 @@ var KEYMAP={ ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",
   w:"up",s:"down",a:"left",d:"right",W:"up",S:"down",A:"left",D:"right",
   z:"action",Z:"action"," ":"action",Enter:"action",x:"back",X:"back",Escape:"back",Backspace:"back" };
 window.addEventListener("keydown", function(e){ if(e.key==="Shift"){ held.run=true; return; } var m=KEYMAP[e.key]; if(!m) return; e.preventDefault(); initAudio();
-  if(m==="up"||m==="down"||m==="left"||m==="right"){ if(G.mode==="world"){ held[m]=true; } else input(m); } else input(m); });
+  if(m==="up"||m==="down"||m==="left"||m==="right"){ if(G.mode==="world"){ held[m]=true; if(!G.player.moving) G.player.dir=m; } else input(m); } else input(m); });
 window.addEventListener("keyup", function(e){ if(e.key==="Shift"){ held.run=false; return; } var m=KEYMAP[e.key]; if(m&&held.hasOwnProperty(m)) held[m]=false; });
 function bindTouch(){
   document.querySelectorAll("[data-d]").forEach(function(el){ var d=el.getAttribute("data-d");
-    el.addEventListener("touchstart", function(ev){ ev.preventDefault(); initAudio(); if(G.mode==="world") held[d]=true; else input(d); }, {passive:false});
-    el.addEventListener("touchend", function(ev){ ev.preventDefault(); held[d]=false; }, {passive:false}); });
+    el.addEventListener("touchstart", function(ev){ ev.preventDefault(); initAudio(); if(G.mode==="world"){ held[d]=true; if(!G.player.moving) G.player.dir=d; } else input(d); }, {passive:false});
+    el.addEventListener("touchend", function(ev){ ev.preventDefault(); held[d]=false; }, {passive:false});
+    el.addEventListener("touchcancel", function(ev){ held[d]=false; }, {passive:false}); });
   document.querySelectorAll("[data-k]").forEach(function(el){ var k=el.getAttribute("data-k")==="a"?"action":"back";
     el.addEventListener("touchstart", function(ev){ ev.preventDefault(); initAudio(); input(k); }, {passive:false}); });
 }
@@ -912,7 +914,8 @@ function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterW
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-function loop(){ TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
+var _lastT=0;
+function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0||dt>100) dt=FRAME_MS; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 /* ===== PWA: register service worker for offline install ===== */
