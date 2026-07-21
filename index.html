@@ -339,7 +339,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.26";
+var GAME_VERSION="0.22.27";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -685,7 +685,8 @@ function computeQuests(){
     {t:"Defeat the Champion and win the League", d:!!f.champion},
     {t:"Catch 15 different Buddymon (" +caughtCount()+ "/15)", d:caughtCount()>=15},
     {t:"Reach the Rainbow Route", d:!!v.rainbow},
-    {t:"Catch the legendary Luminox", d:!!G.caught.luminox}
+    {t:"Catch the legendary Luminox", d:!!G.caught.luminox},
+    {t:"Fill your team with 6 Buddies", d:G.party.length>=6}
   ];
   var firstOpen=-1; for(var i=0;i<list.length;i++){ if(!list[i].d){ firstOpen=i; break; } }
   return {list:list, next:firstOpen, doneCount:list.filter(function(q){return q.d;}).length};
