@@ -196,7 +196,7 @@ var SIGNS={
 var MAPS={
   town:{ name:"Jayhaven", theme:"grass",
     grid:["TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","T...................#..................T","T.....RRR...RRR.....#........RRR.......T","T.....HDH...HDH.....#..,,,,,,,DH.......T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#..,,,,,,,.........T","T.......#...........#.....S............T","T.......#.S.........#..................T","T..###################################.T","T...#...............#...............#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#...............#...,,,,,,......#..T","T,,,#.RRRR..........#...............#..T","T,,,#.LELL..........#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T...#...............#.........~~~~~~#..T","T..###################################.T","T...................#..................T","T...................#.........RRRR.....T","T.C.................#.........LGLL.....T","T.....S.............###############....T","T.....,,,,,,,,,,,,,.#..................T","T.....,,,,,,,,,,,,,.#..................T","TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"],
-    wild:{ pool:["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup"], min:2, max:5 },
+    wild:{ pool:["nibbit","buzzle","leafling","puddlet","cindermouse","sparkpup"], night:["nibbit","cindermouse","sparkpup","gloomoth","buzzle","cindermouse"], min:2, max:5 },
     warps:{ "2,25":{map:"cave",x:9,y:14}, "31,25":{map:"gym",x:7,y:9} },
     npcs:[
       {tx:14,ty:11,dir:"down",body:"#ffb300",hair:"#4e342e",name:"Shopkeeper Ada",role:"shop"},
@@ -234,7 +234,7 @@ var MAPS={
   },
   cave:{ name:"Whisper Cave", theme:"cave",
     grid:["oooooooooooooooooooo","o.........X........o","o..................o","o..,,,,,..o........o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o..,,,,,....,,,,,..o","o...........,,,,,..o","o...........,,,,,..o","o......,,,,,,......o","o....o.,,,,,,.o....o","o......,,,,,,......o","o..................o","o..................o","o..................o","oooooooooXoooooooooo"],
-    wild:{ pool:["sparkpup","cindermouse","puddlet","leafling","gloomoth","nibbit"], min:5, max:9 },
+    wild:{ pool:["sparkpup","cindermouse","puddlet","leafling","gloomoth","nibbit"], night:["gloomoth","cindermouse","sparkpup","gloomoth","puddlet","cindermouse"], min:5, max:9 },
     warps:{ "9,15":{map:"town",x:2,y:24}, "10,1":{map:"gym3",x:7,y:9} },
     npcs:[
       {tx:2,ty:12,dir:"right",body:"#a1887f",hair:"#3e2723",name:"Hiker Cliff",role:"trainer",team:[["nibbit",8],["sparkpup",9]],reward:4,pre:["Caves make you strong! Show me your team!"],win:["You have grit, kid!"]},
@@ -293,7 +293,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var G={ mode:"title", mapId:"town",
+var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
   party:[], box:[], caught:{}, seen:{}, orbs:8, coins:60, items:{potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}, keyItems:{}, badges:{}, flags:{gotStarter:false,visited:{}}, steps:0, settings:{sound:true,run:false} };
@@ -350,6 +350,11 @@ function drawTile(ch,sx,sy,theme){
 
 /* ===== World render ===== */
 var camPx=0,camPy=0;
+var WEATHER_MAPS={town:true,beach:true};
+function rollWeather(mapId){ if(!WEATHER_MAPS[mapId]){ G.weather="none"; return; } var r=Math.random(); G.weather = r<0.55?"none":r<0.78?"rain":"sun"; }
+function weatherLabel(){ if(G.weather==="rain") return "Rain"; if(G.weather==="sun") return "Sun"; return ""; }
+function isNight(){ var h=(new Date()).getHours(); return h>=20||h<6; }
+function resolveWildPool(wc){ if(!wc) return null; if(isNight() && wc.night) return wc.night; return wc.pool; }
 function applyTint(theme){ if(theme!=="grass"&&theme!=="beach") return; var h=(new Date()).getHours(), col=null; if(h>=20||h<5) col="rgba(18,22,66,0.36)"; else if(h<7) col="rgba(255,150,80,0.15)"; else if(h>=18) col="rgba(255,138,60,0.17)"; if(col){ ctx.fillStyle=col; rr(0,0,W,H); } }
 function renderWorld(){
   var m=curMap(), p=G.player, MWp=mapW()*TS, MHp=mapH()*TS;
@@ -367,10 +372,12 @@ function renderWorld(){
   for(var pi=0;pi<PARTS.length;pi++){ var pp=PARTS[pi]; ctx.globalAlpha=Math.max(0,pp.life/18); ctx.fillStyle=pp.c; rr(pp.x-camPx-1,pp.y-camPy-1,3,3); } ctx.globalAlpha=1;
   if(FX.fade>0){ ctx.fillStyle="rgba(6,7,16,"+FX.fade+")"; rr(0,0,W,H); }
   applyTint(m.theme);
+  if(G.weather==="rain"){ ctx.strokeStyle="rgba(180,220,255,0.35)"; ctx.lineWidth=1; for(var rn=0;rn<40;rn++){ var rx=(TICK*2+rn*17)%W, ry=(TICK*4+rn*29)%H; ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-3,ry+8); ctx.stroke(); } }
+  else if(G.weather==="sun"){ ctx.fillStyle="rgba(255,224,120,0.10)"; rr(0,0,W,H); }
   ctx.fillStyle="rgba(16,18,40,.72)"; rr(6,6,196,26);
   ctx.fillStyle="#ffcc33"; ctx.font="13px Trebuchet MS"; ctx.textBaseline="middle"; ctx.textAlign="left";
   ctx.fillText(m.name, 14, 20);
-  ctx.fillStyle="#cfe0ff"; ctx.textAlign="right"; ctx.fillText("Team "+G.party.length+"/6   Orbs "+G.orbs, 196, 20); ctx.textAlign="left";
+  ctx.fillStyle="#cfe0ff"; ctx.textAlign="right"; var wl=weatherLabel(), nt=isNight()?"Night ":""; ctx.fillText(nt+(wl?"["+wl+"] ":"")+"Team "+G.party.length+"/6   Orbs "+G.orbs, 220, 20); ctx.textAlign="left";
   if(SAVEFLASH>0){ ctx.globalAlpha=Math.min(1,SAVEFLASH/48); ctx.fillStyle="#2e7d32"; rr(W-32,8,22,20); ctx.strokeStyle="#dfffe0"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W-27,18); ctx.lineTo(W-23,22); ctx.lineTo(W-15,13); ctx.stroke(); ctx.globalAlpha=1; }
 }
 
@@ -386,6 +393,7 @@ function stepMove(d){ var p=G.player; p.dir=d; var dd=delta(d), nx=p.tx+dd[0], n
 function doWarp(w){ sfx("warp"); FX.fade=1; G.mapId=w.map; var p=G.player; p.tx=w.x; p.ty=w.y; p.fromX=w.x; p.fromY=w.y; p.moving=false; p.prog=0;
   G.follow.tx=w.x; G.follow.ty=w.y; G.follow.fromX=w.x; G.follow.fromY=w.y;
   if(!G.flags.visited) G.flags.visited={}; G.flags.visited[w.map]=true;
+  rollWeather(w.map);
   toast("Entering "+MAPS[w.map].name); saveGame(true); }
 function onStep(){ G.steps++; if(G.settings.run||held.run) spawnDust(G.player.tx*TS+16,G.player.ty*TS+28); if(G.steps%2===0) sfx("step"); if(isTallGrass(G.player.tx,G.player.ty)) spawnRustle(G.player.tx*TS+16,G.player.ty*TS+24);
   var w=warpAt(G.player.tx,G.player.ty); if(w){ doWarp(w); return; }
@@ -396,7 +404,7 @@ function onStep(){ G.steps++; if(G.settings.run||held.run) spawnDust(G.player.tx
 function pickWild(pool){ var id=pool[Math.floor(Math.random()*pool.length)];
   if(SPECIES[id].rare && Math.random()<0.55) id=pool[Math.floor(Math.random()*pool.length)];
   return id; }
-function wildEncounter(wc){ var id=pickWild(wc.pool), lvl=wc.min+Math.floor(Math.random()*(wc.max-wc.min+1));
+function wildEncounter(wc){ var pool=resolveWildPool(wc), id=pickWild(pool), lvl=wc.min+Math.floor(Math.random()*(wc.max-wc.min+1));
   G.seen[id]=true; startBattle(makeMon(id,lvl), true); }
 
 /* ===== Interaction ===== */
@@ -685,6 +693,8 @@ function eMoveOf(m){ return MOVES[m.moves[Math.floor(Math.random()*m.moves.lengt
 function hit(a,d,mv){ var mult=typeMult(mv.type,d.sp.type), stab=(mv.type===a.sp.type)?1.5:1;
   var dmg=Math.floor((a.atk*mv.power/(d.def+18))*mult*stab*(0.85+Math.random()*0.15))+1;
   if(a.status==="brn") dmg=Math.max(1,Math.floor(dmg*0.5));
+  if(G.weather==="rain"){ if(mv.type==="Water") dmg=Math.floor(dmg*1.5); else if(mv.type==="Fire") dmg=Math.max(1,Math.floor(dmg*0.7)); }
+  else if(G.weather==="sun"){ if(mv.type==="Fire") dmg=Math.floor(dmg*1.5); else if(mv.type==="Water") dmg=Math.max(1,Math.floor(dmg*0.7)); else if(mv.type==="Grass") dmg=Math.floor(dmg*1.25); }
   d.hp=Math.max(0,d.hp-dmg); return {dmg:dmg,mult:mult}; }
 function espd(m){ return m.status==="par"?m.spd*0.5:m.spd; }
 function applyStatus(mon,st,msgs,label){
@@ -726,7 +736,8 @@ function addEff(msgs,r){ if(r.mult>1) msgs.push("It is super effective!"); else 
 function queueMsgs(arr,after){ var B=G.battle; B.msgs=arr; B.mi=0; B._shownMi=-1; B.phase="msg"; B.after=after; }
 function startBattle(wild,isWild){ var idx=firstAble(); if(idx<0) return;
   G.battle={ wild:wild,isWild:isWild,trainer:null,me:idx,phase:"msg",sel:0,forced:false,msgs:[],mi:0,after:null,anim:null,_shownMi:-1 }; G.mode="battle";
-  queueMsgs(["A wild "+wild.name+" (L"+wild.level+") appeared!"], function(){ G.battle.phase="menu"; G.battle.sel=0; }); }
+  var intro=["A wild "+wild.name+" (L"+wild.level+") appeared!"]; if(G.weather==="rain") intro.unshift("Rain is pouring down!"); else if(G.weather==="sun") intro.unshift("The sunlight is harsh!");
+  queueMsgs(intro, function(){ G.battle.phase="menu"; G.battle.sel=0; }); }
 function startTrainer(npc, lvlBonus){ var idx=firstAble(); if(idx<0){ toast("Your team cannot battle!"); return; }
   var bonus=lvlBonus||0;
   var team=npc.team.map(function(t){ return makeMon(t[0],t[1]+bonus); });
@@ -865,10 +876,10 @@ function resetNpcs(){ for(var mid in MAPS) MAPS[mid].npcs.forEach(function(n){ n
 function newGame(){ resetNpcs(); G.mapId="town"; G.party=[]; G.box=[]; G.caught={}; G.seen={}; G.orbs=8; G.coins=60; G.items={potion:2,superpotion:0,revive:0,rareCandy:0,panacea:0}; G.keyItems={}; G.badges={}; G.flags={gotStarter:false,visited:{town:true}}; G.steps=0; G.settings={sound:true,run:false}; soundOn=true;
   var p=G.player; p.tx=18; p.ty=10; p.fromX=18; p.fromY=10; p.dir="down"; p.moving=false; p.prog=0; p.name="JJ"; p.color="#2196f3";
   G.follow={tx:18,ty:10,fromX:18,fromY:10};
-  enterWorld(); var nm=askName("JJ"); G.player.name=nm;
+  rollWeather(G.mapId); enterWorld(); var nm=askName("JJ"); G.player.name=nm;
   openChoice(["Blue hero","Red hero","Green hero","Purple hero"], function(i){ if(i<0) i=0; G.player.color=HERO_COLORS[i][1];
     openDialog("", ["Welcome to Jayhaven, "+nm+"!","Prof. Cedar is right nearby.","Press Z / A to talk to him and pick your first Buddy!"], null); }); }
-function continueGame(){ if(hasSave()&&loadGame()){ enterWorld(); toast("Welcome back, "+G.player.name+"!"); } else toast("No saved adventure found."); }
+function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterWorld(); toast("Welcome back, "+G.player.name+"!"); } else toast("No saved adventure found."); }
 
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
