@@ -25,7 +25,7 @@
     env(safe-area-inset-bottom,0) env(safe-area-inset-left,0); }
   #wrap{ height:100%; display:flex; align-items:center; justify-content:center; }
   #stage{ position:relative; }
-  canvas{ image-rendering:pixelated; background:#5aa84b; border:4px solid #11132a;
+  canvas{ image-rendering:auto; background:#5aa84b; border:4px solid #11132a;
     border-radius:8px; box-shadow:0 12px 40px rgba(0,0,0,.6); touch-action:none; }
   .overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
     flex-direction:column; text-align:center; }
@@ -99,8 +99,10 @@
 
 /* ===== Canvas & responsive scale ===== */
 var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
-ctx.imageSmoothingEnabled=false;
-var W=cv.width, H=cv.height, TS=32, VC=Math.floor(W/TS), VR=Math.floor(H/TS);
+var W=480, H=352, TS=32, VC=Math.floor(W/TS), VR=Math.floor(H/TS);
+var DPR=Math.min(3, Math.max(1, Math.round(window.devicePixelRatio||1)));
+cv.width=W*DPR; cv.height=H*DPR; if(cv.style){ cv.style.width=W+"px"; cv.style.height=H+"px"; }
+ctx.setTransform(DPR,0,0,DPR,0,0); ctx.imageSmoothingEnabled=false;
 var stage=document.getElementById("stage");
 function vpSize(){ var vv=window.visualViewport;
   return vv ? {w:vv.width, h:vv.height} : {w:window.innerWidth, h:window.innerHeight}; }
@@ -310,7 +312,7 @@ var held={ up:false,down:false,left:false,right:false,run:false };
 var TICK=0, FX={fade:0,shake:0}, PARTS=[], SAVEFLASH=0;
 
 /* ===== Sprites ===== */
-function rr(x,y,w,h){ ctx.fillRect(x|0,y|0,w|0,h|0); }
+function rr(x,y,w,h){ ctx.fillRect(x,y,w,h); }
 function drawCreature(cx,cy,s,sp,faceRight){
   var b=sp.body,a=sp.accent;
   ctx.save(); if(faceRight){ ctx.translate(cx*2,0); ctx.scale(-1,1); }
