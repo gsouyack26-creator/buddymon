@@ -339,7 +339,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.31";
+var GAME_VERSION="0.22.32";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -380,7 +380,7 @@ function drawHuman(sx,sy,dir,body,hair,frame){
 function drawTile(ch,sx,sy,theme){
   var base = theme==="cave"?"#3a3550": theme==="gym"?"#c9a25f": theme==="beach"?"#e6d3a3":"#5aa84b";
   ctx.fillStyle=base; rr(sx,sy,TS,TS);
-  if(ch==="~"){ ctx.fillStyle="#3d7fd6"; rr(sx,sy,TS,TS); var wsh=Math.sin((TICK+sx*0.7+sy)*0.06)*3; ctx.fillStyle="rgba(255,255,255,.25)"; rr(sx+4+wsh,sy+8,10,2); rr(sx+16-wsh,sy+20,10,2); }
+  if(ch==="~"){ ctx.fillStyle="#3d7fd6"; rr(sx,sy,TS,TS); var wsh=Math.sin((TICK+(sx+camPx)*0.7+(sy+camPy))*0.06)*3; ctx.fillStyle="rgba(255,255,255,.25)"; rr(sx+4+wsh,sy+8,10,2); rr(sx+16-wsh,sy+20,10,2); }
   else if(ch==="#"){ ctx.fillStyle="#d9c39a"; rr(sx,sy,TS,TS); ctx.fillStyle="rgba(0,0,0,.06)"; rr(sx,sy,TS,2); rr(sx,sy,2,TS); }
   else if(ch==="o"){ if(theme==="cave"){ ctx.fillStyle="#2a2640"; rr(sx,sy,TS,TS); ctx.fillStyle="#3d3860"; rr(sx+2,sy+2,TS-4,TS-6); ctx.fillStyle="rgba(255,255,255,.05)"; rr(sx+5,sy+5,8,5); }
     else { ctx.fillStyle="#8d9199"; ctx.beginPath(); ctx.ellipse(sx+16,sy+18,12,10,0,0,7); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.2)"; ctx.beginPath(); ctx.ellipse(sx+12,sy+13,4,3,0,0,7); ctx.fill(); } }
