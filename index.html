@@ -155,20 +155,20 @@ var MOVES={
 
 /* ===== Species (base + evolved). evo:{to,lvl} ===== */
 var SPECIES={
-  sprucub:    {name:"Sprucub",    type:"Grass",   base:{hp:45,atk:11,def:11,spd:10},moves:["tackle","vine"],   body:"#5db85d",accent:"#2e7d32",starter:true,catchRate:40,evo:{to:"timbermane",lvl:15}},
-  emberkit:   {name:"Emberkit",   type:"Fire",    base:{hp:42,atk:13,def:9,spd:12}, moves:["scratch","ember"], body:"#ff7043",accent:"#c53d13",starter:true,catchRate:40,evo:{to:"flarelynx",lvl:15}},
-  dribblet:   {name:"Dribblet",   type:"Water",   base:{hp:48,atk:10,def:12,spd:9}, moves:["tackle","bubble"], body:"#42a5f5",accent:"#1565c0",starter:true,catchRate:40,evo:{to:"tidewhirl",lvl:15}},
-  nibbit:     {name:"Nibbit",     type:"Normal",  base:{hp:38,atk:9,def:8,spd:13},  moves:["tackle","scratch"],body:"#c9a66b",accent:"#7a5c33",catchRate:120,evo:{to:"thumparoo",lvl:16}},
-  buzzle:     {name:"Buzzle",     type:"Bug",     base:{hp:36,atk:10,def:9,spd:12}, moves:["buzz","tackle"],   body:"#cddc39",accent:"#827717",catchRate:120,evo:{to:"vesperia",lvl:13}},
-  sparkpup:   {name:"Sparkpup",   type:"Electric",base:{hp:40,atk:12,def:9,spd:14}, moves:["spark","bite"],    body:"#ffee58",accent:"#f9a825",catchRate:80,evo:{to:"voltmastiff",lvl:17}},
-  puddlet:    {name:"Puddlet",    type:"Water",   base:{hp:44,atk:9,def:11,spd:9},  moves:["bubble","tackle"], body:"#4dd0e1",accent:"#00838f",catchRate:100,evo:{to:"marisplash",lvl:16}},
-  leafling:   {name:"Leafling",   type:"Grass",   base:{hp:42,atk:10,def:11,spd:10},moves:["vine","tackle"],   body:"#81c784",accent:"#388e3c",catchRate:100,evo:{to:"bloomstag",lvl:16}},
-  cindermouse:{name:"Cindermouse",type:"Fire",    base:{hp:40,atk:12,def:9,spd:12}, moves:["ember","scratch"], body:"#ef5350",accent:"#b71c1c",catchRate:90,evo:{to:"emberat",lvl:15}},
+  sprucub:    {name:"Sprucub",    type:"Grass",   base:{hp:45,atk:11,def:11,spd:10},moves:["tackle","vine"],   body:"#5db85d",accent:"#2e7d32",starter:true,catchRate:40,evo:{to:"timbermane",lvl:15},learn:{8:"vine",12:"leaf"}},
+  emberkit:   {name:"Emberkit",   type:"Fire",    base:{hp:42,atk:13,def:9,spd:12}, moves:["scratch","ember"], body:"#ff7043",accent:"#c53d13",starter:true,catchRate:40,evo:{to:"flarelynx",lvl:15},learn:{8:"ember",12:"flare"}},
+  dribblet:   {name:"Dribblet",   type:"Water",   base:{hp:48,atk:10,def:12,spd:9}, moves:["tackle","bubble"], body:"#42a5f5",accent:"#1565c0",starter:true,catchRate:40,evo:{to:"tidewhirl",lvl:15},learn:{8:"bubble",12:"splash"}},
+  nibbit:     {name:"Nibbit",     type:"Normal",  base:{hp:38,atk:9,def:8,spd:13},  moves:["tackle","scratch"],body:"#c9a66b",accent:"#7a5c33",catchRate:120,evo:{to:"thumparoo",lvl:16},learn:{10:"bite"}},
+  buzzle:     {name:"Buzzle",     type:"Bug",     base:{hp:36,atk:10,def:9,spd:12}, moves:["buzz","tackle"],   body:"#cddc39",accent:"#827717",catchRate:120,evo:{to:"vesperia",lvl:13},learn:{9:"gust"}},
+  sparkpup:   {name:"Sparkpup",   type:"Electric",base:{hp:40,atk:12,def:9,spd:14}, moves:["spark","bite"],    body:"#ffee58",accent:"#f9a825",catchRate:80,evo:{to:"voltmastiff",lvl:17},learn:{14:"thunderwave"}},
+  puddlet:    {name:"Puddlet",    type:"Water",   base:{hp:44,atk:9,def:11,spd:9},  moves:["bubble","tackle"], body:"#4dd0e1",accent:"#00838f",catchRate:100,evo:{to:"marisplash",lvl:16},learn:{12:"splash"}},
+  leafling:   {name:"Leafling",   type:"Grass",   base:{hp:42,atk:10,def:11,spd:10},moves:["vine","tackle"],   body:"#81c784",accent:"#388e3c",catchRate:100,evo:{to:"bloomstag",lvl:16},learn:{11:"leaf"}},
+  cindermouse:{name:"Cindermouse",type:"Fire",    base:{hp:40,atk:12,def:9,spd:12}, moves:["ember","scratch"], body:"#ef5350",accent:"#b71c1c",catchRate:90,evo:{to:"emberat",lvl:15},learn:{12:"flare"}},
   gloomoth:   {name:"Gloomoth",   type:"Bug",     base:{hp:52,atk:13,def:12,spd:9}, moves:["gust","bite"],     body:"#9575cd",accent:"#4527a0",rare:true,catchRate:45},
-  finling:    {name:"Finling",    type:"Water",    base:{hp:44,atk:11,def:10,spd:12},moves:["bubble","tackle"], body:"#4fc3f7",accent:"#0277bd",catchRate:100,evo:{to:"finwave",lvl:16}},
-  crabbo:     {name:"Crabbo",     type:"Water",    base:{hp:50,atk:12,def:15,spd:7}, moves:["bubble","scratch"],body:"#ff8a65",accent:"#bf360c",catchRate:90,evo:{to:"crabalisk",lvl:18}},
-  gullby:     {name:"Gullby",     type:"Normal",   base:{hp:40,atk:10,def:9,spd:14}, moves:["gust","tackle"],   body:"#eceff1",accent:"#90a4ae",catchRate:110,evo:{to:"gullgeist",lvl:16}},
-  zapfin:     {name:"Zapfin",     type:"Electric", base:{hp:42,atk:13,def:9,spd:15}, moves:["spark","bubble"],  body:"#ffd54f",accent:"#0288d1",catchRate:80,evo:{to:"voltray",lvl:18}},
+  finling:    {name:"Finling",    type:"Water",    base:{hp:44,atk:11,def:10,spd:12},moves:["bubble","tackle"], body:"#4fc3f7",accent:"#0277bd",catchRate:100,evo:{to:"finwave",lvl:16},learn:{12:"splash"}},
+  crabbo:     {name:"Crabbo",     type:"Water",    base:{hp:50,atk:12,def:15,spd:7}, moves:["bubble","scratch"],body:"#ff8a65",accent:"#bf360c",catchRate:90,evo:{to:"crabalisk",lvl:18},learn:{13:"bite",15:"splash"}},
+  gullby:     {name:"Gullby",     type:"Normal",   base:{hp:40,atk:10,def:9,spd:14}, moves:["gust","tackle"],   body:"#eceff1",accent:"#90a4ae",catchRate:110,evo:{to:"gullgeist",lvl:16},learn:{11:"bite"}},
+  zapfin:     {name:"Zapfin",     type:"Electric", base:{hp:42,atk:13,def:9,spd:15}, moves:["spark","bubble"],  body:"#ffd54f",accent:"#0288d1",catchRate:80,evo:{to:"voltray",lvl:18},learn:{13:"splash"}},
   finwave:    {name:"Finwave",    type:"Water",    base:{hp:66,atk:17,def:15,spd:16},moves:["splash","bubble","bite"],body:"#0288d1",accent:"#01579b",evolved:true,catchRate:30},
   crabalisk:  {name:"Crabalisk",  type:"Water",    base:{hp:72,atk:18,def:22,spd:9}, moves:["splash","scratch","bite"],body:"#e64a19",accent:"#8d2000",evolved:true,catchRate:30},
   gullgeist:  {name:"Gullgeist",  type:"Normal",   base:{hp:60,atk:16,def:13,spd:20},moves:["gust","bite","tackle"],body:"#cfd8dc",accent:"#607d8b",evolved:true,catchRate:35},
@@ -453,8 +453,13 @@ function makeMon(id,level){ var sp=SPECIES[id], b=sp.base, maxhp=b.hp+level*3+6;
   return { id:id, sp:sp, name:sp.name, nick:null, level:level, maxhp:maxhp, hp:maxhp, atk:b.atk+level, def:b.def+level, spd:b.spd+level, xp:0, moves:sp.moves.slice(), status:null, slpT:0 }; }
 function dname(m){ return m.nick||m.name; }
 function xpToNext(l){ return 14+l*10; }
+function learnMove(mon, key, msgs){ if(!MOVES[key]||mon.moves.indexOf(key)>=0) return;
+  var nm=MOVES[key].name;
+  if(mon.moves.length<4){ mon.moves.push(key); msgs.push(dname(mon)+" learned "+nm+"!"); }
+  else { var forgot=MOVES[mon.moves[0]].name; mon.moves.shift(); mon.moves.push(key); msgs.push(dname(mon)+" forgot "+forgot+" and learned "+nm+"!"); } }
 function gainXp(mon, amt, msgs){ mon.xp+=amt; msgs.push(dname(mon)+" gained "+amt+" XP.");
-  while(mon.xp>=xpToNext(mon.level)){ mon.xp-=xpToNext(mon.level); mon.level++; mon.maxhp+=3; mon.hp+=3; mon.atk++; mon.def++; mon.spd++; msgs.push(dname(mon)+" grew to level "+mon.level+"!"); } }
+  while(mon.xp>=xpToNext(mon.level)){ mon.xp-=xpToNext(mon.level); mon.level++; mon.maxhp+=3; mon.hp+=3; mon.atk++; mon.def++; mon.spd++; msgs.push(dname(mon)+" grew to level "+mon.level+"!");
+    var ls=mon.sp.learn; if(ls&&ls[mon.level]) learnMove(mon, ls[mon.level], msgs); } }
 function evolveCheck(mon, msgs){ var e=mon.sp.evo; if(!e||mon.level<e.lvl) return false;
   var ratio=mon.hp/mon.maxhp, ns=SPECIES[e.to], b=ns.base, oldName=dname(mon);
   mon.id=e.to; mon.sp=ns; if(!mon.nick) mon.name=ns.name; mon.maxhp=b.hp+mon.level*3+6; mon.hp=Math.max(1,Math.round(mon.maxhp*ratio));
