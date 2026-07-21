@@ -338,7 +338,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.19";
+var GAME_VERSION="0.22.20";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -717,6 +717,8 @@ function computeAchievements(){
     {n:"Legend Hunter", d:!!G.caught.luminox, x:"Catch the legendary Luminox"},
     {n:"Master Angler", d:!!G.keyItems.rod, x:"Get the Old Rod"},
     {n:"Water Whisperer", d:caughtTypeCount("Water")>=5, x:"Catch 5 Water-type Buddymon ("+caughtTypeCount("Water")+"/5)"},
+    {n:"Spark Collector", d:caughtTypeCount("Electric")>=4, x:"Catch 4 Electric-type Buddymon ("+caughtTypeCount("Electric")+"/4)"},
+    {n:"Ember Enthusiast", d:caughtTypeCount("Fire")>=3, x:"Catch 3 Fire-type Buddymon ("+caughtTypeCount("Fire")+"/3)"},
     {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
     {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"},
     {n:"Rod Master", d:(G.keyItems.rodTier||0)>=3, x:"Earn the Super Rod from Fisher Abyss"},
