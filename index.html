@@ -291,7 +291,8 @@ MAPS.gym2={ name:"Tide Gym", theme:"gym", wild:null,
     {tx:7,ty:2,dir:"down",body:"#4fc3f7",hair:"#01579b",name:"Leader Marina",role:"trainer",boss:true,badge:"tide",team:[["puddlet",12],["finwave",14]],reward:6,coins:200,pre:["I am Leader Marina of the Tide Gym!","Beat my Buddies to earn the Tide Badge!"],win:["The tides favor you today!","The TIDE BADGE is yours!","Take these coins and Orbs, champion!"]},
     {tx:5,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Wade",role:"trainer",team:[["finling",11]],reward:2,coins:40,pre:["Prove yourself to me first!"],win:["Splashy work!"]},
     {tx:9,ty:5,dir:"down",body:"#b3e5fc",hair:"#0277bd",name:"Aide Coral",role:"trainer",team:[["crabbo",11]],reward:2,coins:40,pre:["No badge until you pass me!"],win:["Well done!"]},
-    {tx:12,ty:1,dir:"down",body:"#e1f5fe",hair:"#01579b",name:"Gym Janitor",role:"talk",lines:["Mopping up puddles is a full-time job around here.","Leader Marina says it builds character."]}
+    {tx:12,ty:1,dir:"down",body:"#e1f5fe",hair:"#01579b",name:"Gym Janitor",role:"talk",lines:["Mopping up puddles is a full-time job around here.","Leader Marina says it builds character."]},
+    {tx:2,ty:7,dir:"down",body:"#81d4fa",hair:"#01579b",name:"Curious Diver",role:"talk",lines:["Leader Marina trained with wild Buddymon in the open sea.","That is why nobody can out-swim her!"]}
   ] };
 MAPS.gym3={ name:"Spark Gym", theme:"gym", wild:null,
   grid:["LLLLLLLLLLLLLLL","L.............L","L.............L","L.............L","L..L.......L..L","L.............L","L..L.......L..L","L.............L","L.............L","L.............L","LLLLLLLXLLLLLLL"],
@@ -335,7 +336,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.15";
+var GAME_VERSION="0.22.16";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
