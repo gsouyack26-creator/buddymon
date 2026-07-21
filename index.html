@@ -318,7 +318,8 @@ MAPS.rainbow={ name:"Rainbow Route", theme:"grass",
   wild:{ pool:["timbermane","flarelynx","tidewhirl","voltmastiff","bloomstag","emberat","marisplash","gloomoth","luminox","voltray","finwave","crabalisk"], min:22, max:30, night:["gloomoth","voltmastiff","emberat","luminox","timbermane"] },
   warps:{ "7,11":{map:"league",x:9,y:10} },
   npcs:[
-    {tx:5,ty:6,dir:"down",body:"#ce93d8",hair:"#4a148c",name:"Rainbow Trainer",role:"trainer",team:[["timbermane",22],["tidewhirl",23],["flarelynx",24]],reward:8,coins:400,pre:["This route is only for Champions!"],win:["Impressive as always!"]}
+    {tx:5,ty:6,dir:"down",body:"#ce93d8",hair:"#4a148c",name:"Rainbow Trainer",role:"trainer",team:[["timbermane",22],["tidewhirl",23],["flarelynx",24]],reward:8,coins:400,pre:["This route is only for Champions!"],win:["Impressive as always!"]},
+    {tx:13,ty:1,dir:"down",body:"#f8bbd0",hair:"#880e4f",name:"Champion Scout",role:"talk",lines:["Only Champions ever set foot on this route.","The Buddymon out here are stronger than anything back home!"]}
   ] };
 function curMap(){ return MAPS[G.mapId]; }
 function tileAt(x,y){ var g=curMap().grid; if(y<0||y>=g.length) return "T"; var row=g[y]; if(x<0||x>=row.length) return "T"; return row.charAt(x); }
@@ -337,7 +338,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.17";
+var GAME_VERSION="0.22.18";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
