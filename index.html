@@ -109,7 +109,16 @@
 /* ===== Canvas & responsive scale ===== */
 var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
 var W=480, H=352, TS=32, VC=Math.floor(W/TS), VR=Math.floor(H/TS);
-var DPR=Math.min(3, Math.max(1, Math.round(window.devicePixelRatio||1)));
+/* Use the raw devicePixelRatio, NOT rounded -- rounding a fractional
+   ratio (e.g. 1.25 or 1.5, extremely common with Windows 125%/150%
+   display scaling) to the nearest integer creates a mismatch between
+   the canvas backing-store resolution and the monitor's real physical
+   pixels. That forces the OS/browser compositor to do its own extra
+   resampling of the whole canvas on every frame just to display it,
+   which shows up as visible judder/wobble during motion -- fully
+   outside our render code's control. Keep the raw ratio (still capped
+   for sanity) so our backing store matches native pixels exactly. */
+var DPR=Math.min(3, Math.max(1, window.devicePixelRatio||1));
 var ui=document.getElementById("ui");
 function vpSize(){ var vv=window.visualViewport;
   return vv ? {w:vv.width, h:vv.height} : {w:window.innerWidth, h:window.innerHeight}; }
@@ -352,7 +361,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.43";
+var GAME_VERSION="0.22.44";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
