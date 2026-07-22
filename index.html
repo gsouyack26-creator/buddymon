@@ -352,7 +352,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.42";
+var GAME_VERSION="0.22.43";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -444,6 +444,13 @@ function renderWorld(){
   ctx.fillText(m.name, 14, 20);
   ctx.fillStyle="#cfe0ff"; ctx.textAlign="right"; var wl=weatherLabel(), nt=isNight()?"Night ":""; ctx.fillText(nt+(wl?"["+wl+"] ":"")+"Team "+G.party.length+"/6   Orbs "+G.orbs, 220, 20); ctx.textAlign="left";
   if(SAVEFLASH>0){ ctx.globalAlpha=Math.min(1,SAVEFLASH/48); ctx.fillStyle="#2e7d32"; rr(W-32,8,22,20); ctx.strokeStyle="#dfffe0"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W-27,18); ctx.lineTo(W-23,22); ctx.lineTo(W-15,13); ctx.stroke(); ctx.globalAlpha=1; }
+  if(DEBUG_FPS && _dbgHist.length>1){
+    var avg=0,max=0; for(var di=0;di<_dbgHist.length;di++){ avg+=_dbgHist[di]; if(_dbgHist[di]>max) max=_dbgHist[di]; }
+    avg/=_dbgHist.length;
+    ctx.fillStyle="rgba(0,0,0,.6)"; rr(6,H-24,150,18);
+    ctx.fillStyle="#7fffab"; ctx.font="11px monospace"; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText("dt avg "+avg.toFixed(1)+"ms max "+max.toFixed(0)+"ms", 10, H-15);
+  }
 }
 
 /* ===== Movement, warps, encounters ===== */
@@ -1018,8 +1025,8 @@ function continueGame(){ if(hasSave()&&loadGame()){ rollWeather(G.mapId); enterW
 setTitleSel(0);
 titleMenu.querySelectorAll(".btn").forEach(function(b){ b.addEventListener("click", function(){ initAudio(); if(b.getAttribute("data-a")==="new") newGame(); else continueGame(); }); });
 bindTouch(); resize();
-var _lastT=0, MAX_DT=FRAME_MS*2;
-function loop(ts){ if(!_lastT) _lastT=ts||0; var dt=(ts||0)-_lastT; _lastT=ts||0; if(dt<0) dt=FRAME_MS; else if(dt>MAX_DT) dt=MAX_DT; TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld();
+var _lastT=0, MAX_DT=FRAME_MS*2; var _dbgHist=[]; var DEBUG_FPS=true;
+function loop(ts){ if(!_lastT) _lastT=ts||0; var rawDt=(ts||0)-_lastT; _lastT=ts||0; var dt=rawDt; if(dt<0) dt=FRAME_MS; else if(dt>MAX_DT) dt=MAX_DT; _dbgHist.push(rawDt); if(_dbgHist.length>90) _dbgHist.shift(); TICK++; if(FX.fade>0) FX.fade=Math.max(0,FX.fade-0.06); if(FX.shake>0) FX.shake=Math.max(0,FX.shake-0.9); if(SAVEFLASH>0) SAVEFLASH--; updateParts(); if(G.mode==="world") updateWorld(dt); if(G.mode==="battle") renderBattle(); else if(G.mode==="dex") renderDex(); else if(G.mode==="quests") renderQuests(); else if(G.mode==="achievements") renderAchievements(); else if(G.mode==="title") renderTitle(); else renderWorld();
   if(_swUpdatePending && !_swReloading && G.mode!=="battle" && !G.player.moving){ _swReloading=true; saveGame(true); toast("Updating to the newest version..."); setTimeout(function(){ location.reload(); }, 700); }
   requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
