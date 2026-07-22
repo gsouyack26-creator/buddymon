@@ -352,7 +352,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.36";
+var GAME_VERSION="0.22.37";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -749,7 +749,9 @@ function computeAchievements(){
     {n:"Grinder", d:highestPartyLevel()>=50, x:"Raise a Buddy to level 50 ("+highestPartyLevel()+"/50)"},
     {n:"Rematch Regular", d:totalRematches()>=5, x:"Battle trainer rematches 5 times ("+Math.min(totalRematches(),5)+"/5)"},
     {n:"Orb Hoarder", d:G.orbs>=20, x:"Hold 20 Buddy Orbs at once"},
+    {n:"Orb Baron", d:G.orbs>=50, x:"Hold 50 Buddy Orbs at once"},
     {n:"Big Spender", d:G.coins>=500, x:"Hold 500 coins at once"},
+    {n:"Coin Baron", d:G.coins>=1500, x:"Hold 1500 coins at once"},
     {n:"House Call", d:!!f.hospitalVisit, x:"Get your team healed at Jayhaven Hospital"},
     {n:"Rod Master", d:(G.keyItems.rodTier||0)>=3, x:"Earn the Super Rod from Fisher Abyss"},
     {n:"World Traveler", d:["town","gym","cave","beach","gym2","gym3","league","rainbow"].every(function(m){return !!v[m];}), x:"Visit every region in the game"},
