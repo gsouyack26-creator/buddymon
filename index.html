@@ -352,7 +352,7 @@ function isTallGrass(x,y){ return tileAt(x,y)===","; }
 function warpAt(x,y){ return curMap().warps[x+","+y]||null; }
 
 /* ===== State ===== */
-var GAME_VERSION="0.22.39";
+var GAME_VERSION="0.22.40";
 var G={ mode:"title", mapId:"town", weather:"none",
   player:{ tx:18,ty:10,dir:"down",moving:false,fromX:18,fromY:10,prog:0,speed:0.16,name:"JJ",color:"#2196f3" },
   follow:{tx:18,ty:10,fromX:18,fromY:10},
@@ -687,6 +687,7 @@ function highestPartyLevel(){ var hi=0; for(var i=0;i<G.party.length;i++){ if(G.
 function totalRematches(){ var n=0; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(np){ n+=(np.rematches||0); }); } return n; }
 function evolvedFormCount(){ var targets={}; for(var k in SPECIES){ if(SPECIES[k].evo) targets[SPECIES[k].evo.to]=true; } var n=0; for(var id in targets){ if(G.caught[id]) n++; } return n; }
 function partyTypeDiversity(){ var t={}; for(var i=0;i<G.party.length;i++) t[G.party[i].sp.type]=true; return Object.keys(t).length; }
+function trainersDefeatedCount(){ var n=0; for(var mid in MAPS){ MAPS[mid].npcs.forEach(function(np){ if(np.role==="trainer" && np.defeated) n++; }); } return n; }
 function seenCount(){ var n=0; for(var k in G.seen) if(G.seen[k]) n++; return n; }
 function totalItemCount(){ var n=0; for(var k in G.items) n+=(G.items[k]||0); return n; }
 function computeQuests(){
@@ -766,7 +767,8 @@ function computeAchievements(){
     {n:"Item Hoarder", d:totalItemCount()>=10, x:"Hold 10 items at once ("+Math.min(totalItemCount(),10)+"/10)"},
     {n:"Need for Speed", d:!!(G.settings&&G.settings.run), x:"Turn on Run mode in Settings"},
     {n:"Evolution Expert", d:evolvedFormCount()>=3, x:"Catch 3 evolved-form Buddymon ("+Math.min(evolvedFormCount(),3)+"/3)"},
-    {n:"Type Diversity", d:partyTypeDiversity()>=4, x:"Have 4+ different types in your team at once ("+Math.min(partyTypeDiversity(),4)+"/4)"}
+    {n:"Type Diversity", d:partyTypeDiversity()>=4, x:"Have 4+ different types in your team at once ("+Math.min(partyTypeDiversity(),4)+"/4)"},
+    {n:"Trainer Slayer", d:trainersDefeatedCount()>=8, x:"Defeat 8 different trainers ("+Math.min(trainersDefeatedCount(),8)+"/8)"}
   ];
 }
 function openAchievements(){ G.mode="achievements"; }
